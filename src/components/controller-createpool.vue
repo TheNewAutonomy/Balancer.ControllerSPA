@@ -8,6 +8,8 @@
   </div>
 </template>
 <script>
+import { parseFixed } from '@ethersproject/bignumber'
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 export default {
   name: 'controller-createpool',
   data () {
@@ -15,27 +17,25 @@ export default {
       poolName: 'TEST',
       poolSymbol: 'TST',
       poolTokens: [
-        '0xC45b3C1c24d5F54E7a2cF288ac668c74Dd507a84',
-        '0xb7D311E2Eb55F2f68a9440da38e7989210b9A05e'
+        '0x471EcE3750Da237f93B8E339c536989b8978a438',
+        '0x765DE816845861e75A25fCA122bb6898B8B1282a'
       ],
-      poolNormalisedWeights: [1200000000000000, 1500000000000000],
-      poolAssetManagers: ['0xD50BD3C345b08B5111d2ebDAEC33B492385a1851'],
+      poolNormalisedWeights: [
+        parseFixed('0.4', 18).toString(),
+        parseFixed('0.6', 18).toString()
+      ],
+      poolAssetManagers: [ZERO_ADDRESS, ZERO_ADDRESS],
       swapFeePercentage: 3000000000000000,
       swapEnabledOnStart: false,
       mustAllowListLPs: false,
       managementAumFeePercentage: 0,
       aumFeeId: 0,
-      salt: '0x01020304',
+      salt: 0x01020304,
       amount: 0
     }
   },
   methods: {
     clickCreate (event) {
-      console.log(
-        'BETTING ON NUMBER, AMOUNT',
-        event.target.innerHTML,
-        this.amount
-      )
       this.winEvent = null
       this.pending = true
       this.$store.state.contractInstance().createPool(
@@ -61,17 +61,6 @@ export default {
           if (err) {
             console.log(err)
             this.pending = false
-          } else {
-            let Won = this.$store.state.contractInstance().Won()
-            Won.watch((err, result) => {
-              if (err) {
-                console.log('could not get event Won()')
-              } else {
-                this.winEvent = result.args
-                this.winEvent._amount = parseInt(result.args._amount, 10)
-                this.pending = false
-              }
-            })
           }
         }
       )
