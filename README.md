@@ -1,4 +1,4 @@
-# dapp-tutorial
+# Balancer controller web application
 
 A simple Vue.js application for interacting with the Balancer controller contract
 
