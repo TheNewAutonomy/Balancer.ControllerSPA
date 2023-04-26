@@ -9,6 +9,7 @@
 </template>
 <script>
 import { parseFixed } from '@ethersproject/bignumber'
+const POOL_SWAP_FEE_PERCENTAGE = parseFixed('0.2', 18).toString()
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 export default {
   name: 'controller-createpool',
@@ -25,12 +26,12 @@ export default {
         parseFixed('0.6', 18).toString()
       ],
       poolAssetManagers: [ZERO_ADDRESS, ZERO_ADDRESS],
-      swapFeePercentage: 3000000000000000,
+      swapFeePercentage: POOL_SWAP_FEE_PERCENTAGE,
       swapEnabledOnStart: false,
       mustAllowListLPs: false,
-      managementAumFeePercentage: 0,
-      aumFeeId: 0,
-      salt: 0x01020304,
+      managementAumFeePercentage: POOL_SWAP_FEE_PERCENTAGE,
+      aumFeeId: 3,
+      salt: '0x1230000000000000000000000000000000000000000000000000000000000000',
       amount: 0
     }
   },
@@ -51,7 +52,7 @@ export default {
         this.aumFeeId,
         this.salt,
         {
-          gas: 300000,
+          gas: 3000000,
           value: this.$store.state.web3
             .web3Instance()
             .toWei(this.amount, 'ether'),
