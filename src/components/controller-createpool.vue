@@ -9,29 +9,33 @@
 </template>
 <script>
 import { parseFixed } from '@ethersproject/bignumber'
-const POOL_SWAP_FEE_PERCENTAGE = parseFixed('0.2', 18).toString()
+const MANAGEMENT_AUM_FEE_PERCENTAGE = parseFixed('0.5', 18).toString()
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
+
 export default {
   name: 'controller-createpool',
   data () {
     return {
       poolName: 'TEST',
-      poolSymbol: 'TST',
+      poolSymbol: 'TEST',
+      // Gnosis
+      // 0x7eF541E2a22058048904fE5744f9c7E4C57AF717
+      // 0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d
+      // Celo
+      // 0x765DE816845861e75A25fCA122bb6898B8B1282a
+      // 0x122013fd7dF1C6F636a5bb8f03108E876548b455
       poolTokens: [
-        '0x471EcE3750Da237f93B8E339c536989b8978a438',
-        '0x765DE816845861e75A25fCA122bb6898B8B1282a'
+        '0x7eF541E2a22058048904fE5744f9c7E4C57AF717',
+        '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d'
       ],
-      poolNormalisedWeights: [
-        parseFixed('0.4', 18).toString(),
-        parseFixed('0.6', 18).toString()
-      ],
+      poolNormalisedWeights: [800000000000000000, 200000000000000000],
       poolAssetManagers: [ZERO_ADDRESS, ZERO_ADDRESS],
-      swapFeePercentage: POOL_SWAP_FEE_PERCENTAGE,
-      swapEnabledOnStart: false,
+      swapFeePercentage: 1000000000000,
+      swapEnabledOnStart: true,
       mustAllowListLPs: false,
-      managementAumFeePercentage: POOL_SWAP_FEE_PERCENTAGE,
-      aumFeeId: 3,
-      salt: '0x1230000000000000000000000000000000000000000000000000000000000000',
+      managementAumFeePercentage: MANAGEMENT_AUM_FEE_PERCENTAGE,
+      aumFeeId: 2,
+      salt: '0x0000000000000000000000000000000000000000000000000000000000000001',
       amount: 0
     }
   },
@@ -52,7 +56,8 @@ export default {
         this.aumFeeId,
         this.salt,
         {
-          gas: 3000000,
+          // gas: 15696230, //  Gnosis
+          gas: 15696230,
           value: this.$store.state.web3
             .web3Instance()
             .toWei(this.amount, 'ether'),

@@ -14,6 +14,8 @@
         </tr>
       </tbody>
     </table>
+    <button @click="clickLoadPools">Load pools</button>
+
     <img v-if="pending" id="loader" src="https://loading.io/spinners/double-ring/lg.double-ring-spinner.gif">
     <div class="event" v-if="winEvent">
       <p v-if="winEvent._status" id="has-won"><i aria-hidden="true" class="fa fa-check"></i> Congragulations, you have won {{winEvent._amount}} wei</p>
@@ -33,40 +35,27 @@ export default {
       ascending: false,
       sortColumn: '',
       rows: [
-        {
-          id: 1,
-          pool: 'Pool 1',
-          address: '0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF'
-        },
-        {
-          id: 2,
-          pool: 'Pool 2',
-          address: '0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF'
-        },
-        {
-          id: 3,
-          pool: 'Pool 3',
-          address: '0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF'
-        },
-        {
-          id: 4,
-          pool: 'Pool 4',
-          address: '0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF'
-        },
-        {
-          id: 5,
-          pool: 'Pool 5',
-          address: '0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF'
-        },
-        {
-          id: 6,
-          pool: 'Pool 6',
-          address: '0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF'
-        }
       ]
     }
   },
   methods: {
+    clickLoadPools (event) {
+      this.$store.state.contractInstance().getPoolsUnderManagement.call(
+        {
+          from: this.$store.state.web3.coinbase
+        },
+        (err, result) => {
+          if (err) {
+            console.log(err)
+            this.pending = false
+          } else {
+            result.forEach((item, index) => {
+              this.rows.push({ address: item })
+            })
+          }
+        }
+      )
+    },
     sortTable: function sortTable (col) {
       if (this.sortColumn === col) {
         this.ascending = !this.ascending
@@ -94,12 +83,9 @@ export default {
       }
       return Object.keys(this.rows[0])
     }
-  },
-  mounted () {
-    console.log('dispatching getContractInstance')
-    this.$store.dispatch('getContractInstance')
   }
 }
+
 </script>
 
 <style scoped>
