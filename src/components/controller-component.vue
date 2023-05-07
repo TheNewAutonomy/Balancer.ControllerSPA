@@ -49,6 +49,7 @@ export default {
             console.log(err)
             this.pending = false
           } else {
+            this.rows = []
             result.forEach((item, index) => {
               this.rows.push({ address: item })
             })
