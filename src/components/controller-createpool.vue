@@ -43,7 +43,7 @@ export default {
     clickCreate (event) {
       this.winEvent = null
       this.pending = true
-      this.$store.state.contractInstance().createPool(
+      this.$store.state.controllerContractInstance().createPool(
         this.poolName,
         this.poolSymbol,
         this.poolTokens,

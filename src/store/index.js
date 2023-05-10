@@ -4,6 +4,7 @@ import state from './state'
 import getWeb3 from '../util/getWeb3'
 import pollWeb3 from '../util/pollWeb3'
 import getContract from '../util/getContract'
+import getPoolContract from '../util/getPoolContract'
 
 Vue.use(Vuex)
 export const store = new Vuex.Store({
@@ -29,7 +30,11 @@ export const store = new Vuex.Store({
     },
     registerContractInstance (state, payload) {
       console.log('Controller contract instance: ', payload)
-      state.contractInstance = () => payload
+      state.controllerContractInstance = () => payload
+    },
+    registerPoolContractInstance (state, payload) {
+      console.log('Pool contract instance: ', payload)
+      state.poolContractInstance = () => payload
     }
   },
   actions: {
@@ -50,6 +55,9 @@ export const store = new Vuex.Store({
       getContract.then(result => {
         commit('registerContractInstance', result)
       }).catch(e => console.log(e))
+    },
+    getPoolContractInstance ({commit}, pool) {
+      getPoolContract(pool, {commit})
     }
   }
 })

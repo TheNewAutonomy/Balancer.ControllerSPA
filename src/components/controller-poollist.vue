@@ -1,7 +1,22 @@
 <template>
   <div class="controller container">
-    <h1>Welcome to the Balancer controller</h1>
+    <header>
+      <h1>Welcome to Balancer controller</h1>
+    </header>
     <h3>Managed pools</h3>
+
+    <ul>
+      <li>
+        <pool-details
+          v-for="pool in pools"
+          :key="pool.id"
+          :id="pool.id"
+          :address="pool.address"
+          @delete="deleteContact"
+        ></pool-details>
+      </li>
+    </ul>
+
     <table id="fourthTable">
       <thead>
         <tr>
@@ -9,7 +24,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="row in rows" :key="row.id">
+        <tr v-for="row in pools" :key="row.id">
           <td v-for="col in columns" :key="col.id">{{row[col]}}</td>
         </tr>
       </tbody>
@@ -34,13 +49,13 @@ export default {
       winEvent: null,
       ascending: false,
       sortColumn: '',
-      rows: [
+      pools: [
       ]
     }
   },
   methods: {
     clickLoadPools (event) {
-      this.$store.state.contractInstance().getPoolsUnderManagement.call(
+      this.$store.state.controllerContractInstance().getPoolsUnderManagement.call(
         {
           from: this.$store.state.web3.coinbase
         },
@@ -49,9 +64,9 @@ export default {
             console.log(err)
             this.pending = false
           } else {
-            this.rows = []
+            this.pools = []
             result.forEach((item, index) => {
-              this.rows.push({ address: item })
+              this.pools.push({ address: item })
             })
           }
         }
@@ -67,7 +82,7 @@ export default {
 
       var ascending = this.ascending
 
-      this.rows.sort(function (a, b) {
+      this.pools.sort(function (a, b) {
         if (a[col] > b[col]) {
           return ascending ? 1 : -1
         } else if (a[col] < b[col]) {
@@ -79,10 +94,10 @@ export default {
   },
   computed: {
     columns: function columns () {
-      if (this.rows.length === 0) {
+      if (this.pools.length === 0) {
         return []
       }
-      return Object.keys(this.rows[0])
+      return Object.keys(this.pools[0])
     }
   }
 }

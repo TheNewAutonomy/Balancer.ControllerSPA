@@ -7,6 +7,7 @@ let state = {
     balance: null,
     error: null
   },
-  contractInstance: null
+  controllerContractInstance: null,
+  poolContractInstance: null
 }
 export default state
