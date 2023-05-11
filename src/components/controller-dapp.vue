@@ -26,7 +26,6 @@
 import HelloMetamask from '@/components/hello-metamask'
 import PoolDetails from '@/components/pool-details'
 import NewPool from '@/components/new-pool'
-import ControllerCreatePool from '@/components/controller-createpool'
 export default {
   name: 'controller-dapp',
   data () {
@@ -104,19 +103,19 @@ export default {
         }
       )
     },
-    addPool (name, symbol) {
+    addPool (name, symbol, poolTokens, poolNormalisedWeights, poolAssetManagers, swapFeePercentage, swapEnabledOnStart, mustAllowListLPs, managementAumFeePercentage, aumFeeId, salt) {
       this.$store.state.controllerContractInstance().createPool(
-        this.poolName,
-        this.poolSymbol,
-        this.poolTokens,
-        this.poolNormalisedWeights,
-        this.poolAssetManagers,
-        this.swapFeePercentage,
-        this.swapEnabledOnStart,
-        this.mustAllowListLPs,
-        this.managementAumFeePercentage,
-        this.aumFeeId,
-        this.salt,
+        name,
+        symbol,
+        poolTokens,
+        poolNormalisedWeights,
+        poolAssetManagers,
+        swapFeePercentage,
+        swapEnabledOnStart,
+        mustAllowListLPs,
+        managementAumFeePercentage,
+        aumFeeId,
+        salt,
         {
           // gas: 15696230, //  Gnosis
           gas: 15696230,
@@ -141,8 +140,7 @@ export default {
   components: {
     'hello-metamask': HelloMetamask,
     'pool-details': PoolDetails,
-    'new-pool': NewPool,
-    'controller-createpool': ControllerCreatePool
+    'new-pool': NewPool
   },
   mounted () {
     console.log('dispatching getContractInstance')
