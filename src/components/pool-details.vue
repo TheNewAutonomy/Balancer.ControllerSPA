@@ -5,11 +5,10 @@
         {{ detailsAreVisible ? "Hide" : "Show" }} Details
       </button>
       <ul v-if="detailsAreVisible">
-        <li><strong>Id: </strong> {{ id }}</li>
+        <li><strong>Id: </strong><font size="1">  {{ id }}</font></li>
         <li><strong>Address: </strong> {{ address }}</li>
-        <li><strong>Vault: </strong> {{ vault }}</li>
       </ul>
-      <button @click="$emit('trigger', id)">Trigger
+      <button @click="$emit('trigger', address)">Trigger
     </button>
     </li>
   </template>
@@ -23,10 +22,6 @@ export default {
       required: true
     },
     address: {
-      type: String,
-      required: true
-    },
-    vault: {
       type: String,
       required: true
     }

@@ -34,7 +34,11 @@ export const store = new Vuex.Store({
     },
     registerPoolContractInstance (state, payload) {
       console.log('Pool contract instance: ', payload)
-      state.poolContractInstance = () => payload
+
+      if (state.poolContractInstance === null) {
+        state.poolContractInstance = []
+      }
+      state.poolContractInstance.push(() => payload)
     }
   },
   actions: {

@@ -40,7 +40,7 @@ export default {
   methods: {
     submitData () {
       this.enteredPoolTokens = [
-        '0x7eF541E2a22058048904fE5744f9c7E4C57AF717',
+        '0xC45b3C1c24d5F54E7a2cF288ac668c74Dd507a84',
         '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d'
       ]
 
