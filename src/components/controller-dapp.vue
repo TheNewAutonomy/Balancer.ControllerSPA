@@ -2,7 +2,11 @@
    <section>
     <hello-metamask/>
     <header>
-      <h1>Controller Pools</h1>
+      <h1>Create new pool</h1>
+    </header>
+    <new-pool @add-pool="addPool"></new-pool>
+    <header>
+      <h1>Managed pools</h1>
     </header>
     <ul>
       <li>
@@ -15,7 +19,6 @@
         ></pool-details>
       </li>
     </ul>
-    <new-pool @add-pool="addPool"></new-pool>
   </section>
 </template>
 <script>
@@ -38,12 +41,12 @@ export default {
     sleep (milliseconds) {
       return new Promise((resolve) => setTimeout(resolve, milliseconds))
     },
-    triggerRun (idx) {
+    triggerRun (idx, id) {
       this.$store.state.controllerContractInstance().runCheck(
         idx,
         {
           // gas: 15696230, //  Gnosis
-          gas: 5696230,
+          gas: 15696230,
           from: this.$store.state.web3.coinbase
         },
         (err, result) => {
@@ -138,6 +141,7 @@ export default {
             console.log(err)
             this.pending = false
           } else {
+            console.log('PoolId: ' + id)
             const newPool = {
               id: id,
               address: this.poolAddresses[index]
