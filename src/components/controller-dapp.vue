@@ -45,7 +45,6 @@ export default {
       this.$store.state.controllerContractInstance().runCheck(
         idx,
         {
-          // gas: 15696230, //  Gnosis
           gas: 15696230,
           from: this.$store.state.web3.coinbase
         },
@@ -71,7 +70,6 @@ export default {
         aumFeeId,
         salt,
         {
-          // gas: 15696230, //  Gnosis
           gas: 15696230,
           value: this.$store.state.web3
             .web3Instance()
