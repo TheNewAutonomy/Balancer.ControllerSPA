@@ -1,6 +1,6 @@
 <template>
     <li>
-      <h3>{{ address }}</h3>
+      <h6>{{ address }}</h6>
       <button @click="toggleDetails">
         {{ detailsAreVisible ? "Hide" : "Show" }} Details
       </button>
