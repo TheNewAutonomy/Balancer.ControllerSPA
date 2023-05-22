@@ -15,7 +15,9 @@
           :key="pool.id"
           :id="pool.id"
           :address="pool.address"
+          :isSwapEnabled="pool.isSwapEnabled"
           @trigger="triggerRun"
+          @SwitchSwapEnabled="SwitchSwapEnabledRun"
         ></pool-details>
       </li>
     </ul>
@@ -44,6 +46,22 @@ export default {
     triggerRun (idx, id) {
       this.$store.state.controllerContractInstance().runCheck(
         idx,
+        {
+          gas: 15696230,
+          from: this.$store.state.web3.coinbase
+        },
+        (err, result) => {
+          if (err) {
+            console.log(err)
+            this.pending = false
+          }
+        }
+      )
+    },
+    SwitchSwapEnabledRun (switchSwapEnabledValue, address) {
+      this.$store.state.controllerContractInstance().setSwapEnabled(
+        address,
+        switchSwapEnabledValue,
         {
           gas: 15696230,
           from: this.$store.state.web3.coinbase
@@ -108,20 +126,20 @@ export default {
       {
         from: this.$store.state.web3.coinbase
       },
-      (err, result) => {
+      (err, poolSet) => {
         if (err) {
           console.log(err)
           this.pending = false
         } else {
           this.pools = []
-          result.forEach((item, index) => {
+          poolSet.forEach((item, index) => {
             console.log('dispatching getPoolContractInstance')
             this.$store.dispatch('getPoolContractInstance', {
               address: item
             })
             this.poolAddresses.push(item)
           })
-          this.poolCount = result.length
+          this.poolCount = poolSet.length
         }
       }
     )
@@ -129,8 +147,8 @@ export default {
       await this.sleep(100)
     }
     this.pools = []
-    this.$store.state.poolContractInstance.forEach((item, index) => {
-      item().getPoolId.call(
+    this.$store.state.poolContractInstance.forEach((poolId, index) => {
+      poolId().getPoolId.call(
         {
           from: this.$store.state.web3.coinbase
         },
@@ -139,12 +157,24 @@ export default {
             console.log(err)
             this.pending = false
           } else {
-            console.log('PoolId: ' + id)
-            const newPool = {
-              id: id,
-              address: this.poolAddresses[index]
-            }
-            this.pools.push(newPool)
+            poolId().getSwapEnabled.call(
+              {
+                from: this.$store.state.web3.coinbase
+              },
+              (err, isSwapEnabled) => {
+                if (err) {
+                  console.log(err)
+                  this.pending = false
+                } else {
+                  const newPool = {
+                    id: id,
+                    address: this.poolAddresses[index],
+                    isSwapEnabled: isSwapEnabled
+                  }
+                  this.pools.push(newPool)
+                }
+              }
+            )
           }
         }
       )
