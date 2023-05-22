@@ -15,7 +15,7 @@ module.exports = {
 
     // Various Dev Server settings
     host: process.env.HOST,
-    port: process.env.HOST,
+    port: process.env.PORT,
     autoOpenBrowser: false,
     errorOverlay: true,
     notifyOnErrors: true,
