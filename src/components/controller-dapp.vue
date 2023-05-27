@@ -74,7 +74,7 @@ export default {
         }
       )
     },
-    addPool (name, symbol, poolTokens, poolNormalisedWeights, poolAssetManagers, swapFeePercentage, swapEnabledOnStart, mustAllowListLPs, managementAumFeePercentage, aumFeeId, salt) {
+    addPool (name, symbol, poolTokens, poolNormalisedWeights, poolAssetManagers, swapFeePercentage, swapEnabledOnStart, mustAllowListLPs, managementAumFeePercentage, aumFeeId, tolerance, salt) {
       this.$store.state.controllerContractInstance().createPool(
         name,
         symbol,
@@ -86,6 +86,7 @@ export default {
         mustAllowListLPs,
         managementAumFeePercentage,
         aumFeeId,
+        tolerance,
         salt,
         {
           gas: 15696230,
@@ -166,12 +167,28 @@ export default {
                   console.log(err)
                   this.pending = false
                 } else {
-                  const newPool = {
-                    id: id,
-                    address: this.poolAddresses[index],
-                    isSwapEnabled: isSwapEnabled
-                  }
-                  this.pools.push(newPool)
+                  poolId().getCircuitBreakerState.call(
+                    this.poolAddresses[index],
+                    {
+                      from: this.$store.state.web3.coinbase
+                    },
+                    (err, circuitBreakerState) => {
+                      if (err) {
+                        console.log(err)
+                        this.pending = false
+                      } else {
+                        console.log('FFFFFF')
+                        console.log(circuitBreakerState)
+
+                        const newPool = {
+                          id: id,
+                          address: this.poolAddresses[index],
+                          isSwapEnabled: isSwapEnabled
+                        }
+                        this.pools.push(newPool)
+                      }
+                    }
+                  )
                 }
               }
             )

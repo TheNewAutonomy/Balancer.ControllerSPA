@@ -28,6 +28,10 @@
           <input type="text" v-model="enteredManagementAumFeePercentage" />
         </div>
         <div>
+          <label>Tolerance %</label>
+          <input type="text" v-model="enteredTolerance" />
+        </div>
+        <div>
           <b-form-checkbox
             id="swapEnabledOnStart"
             v-model="enteredSwapEnabledOnStart"
@@ -72,6 +76,7 @@ export default {
       enteredMustAllowListLPs: false,
       enteredManagementAumFeePercentage: '0.25',
       enteredAumFeeId: 3,
+      enteredTolerance: 15,
       enteredSalt: '0x0000000000000000000000000000000000000000000000000000000000000001',
       selectedTokenA: null,
       selectedTokenB: null,
@@ -143,6 +148,7 @@ export default {
         this.enteredMustAllowListLPs,
         parseFixed(this.enteredManagementAumFeePercentage, 18).toString(),
         this.enteredAumFeeId,
+        this.enteredTolerance,
         this.enteredSalt)
     },
     tokenASelect (e) {
