@@ -1,9 +1,9 @@
 <template>
+  <div>
+    <button @click="toggleDetails">
+      {{ detailsAreVisible ? "Hide" : "Show" }} Self-Managed Form
+    </button>
     <form @submit.prevent="submitData">
-
-      <button @click="toggleDetails">
-        {{ detailsAreVisible ? "Hide" : "Show" }} Form
-      </button>
       <div v-if="detailsAreVisible">
         <div>
             <label>Name</label>
@@ -33,10 +33,6 @@
           <input type="text" v-model="enteredManagementAumFeePercentage" />
         </div>
         <div>
-          <label>Tolerance %</label>
-          <input type="text" v-model="enteredTolerance" />
-        </div>
-        <div>
           <b-form-checkbox
             id="swapEnabledOnStart"
             v-model="enteredSwapEnabledOnStart"
@@ -61,6 +57,7 @@
         </div>
       </div>
     </form>
+  </div>
 </template>
 
 <script>
@@ -68,8 +65,8 @@ import { parseFixed } from '@ethersproject/bignumber'
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 export default {
-  name: 'new-pool',
-  emits: ['add-pool'],
+  name: 'new-selfmanaged-pool',
+  emits: ['add-selfmanaged-pool'],
   data () {
     return {
       detailsAreVisible: false,
@@ -83,7 +80,6 @@ export default {
       enteredMustAllowListLPs: false,
       enteredManagementAumFeePercentage: '0.25',
       enteredAumFeeId: 3,
-      enteredTolerance: 15,
       enteredSalt: '0x0000000000000000000000000000000000000000000000000000000000000001',
       selectedTokenA: null,
       selectedTokenB: null,
@@ -128,7 +124,8 @@ export default {
         { value: '0x2C98Ebada737f6f75B410c0eaa66A19B110796b5', text: 'PRIME' },
         { value: '0x29dFce9c22003A4999930382Fd00f9Fd6133Acd1', text: 'SUSHI' },
         { value: '0x8427bD503dd3169cCC9aFF7326c15258Bc305478', text: 'SYMM' },
-        { value: '0xB13d7477162844FE0d8F36A6808E5897ed158252', text: '** TEST' },
+        { value: '0x785fA6c4383c42deF4182C1820D23f1196a112CE', text: '** TEST 1' },
+        { value: '0x900B0c0762f7eE2D68eb07bb5d17629298aECb9A', text: '** TEST 2' },
         { value: '0x00Be915B9dCf56a3CBE739D9B9c202ca692409EC', text: 'UBE' },
         { value: '0x2A3684e9Dc20B857375EA04235F2F7edBe818FA7', text: 'USDC' }
       ],
@@ -148,7 +145,7 @@ export default {
       this.enteredPoolTokens.sort()
       this.enteredPoolNormalisedWeights = [parseFixed(this.tokenANormalisedWeight, 18).toString(), parseFixed(this.tokenBNormalisedWeight, 18).toString()]
 
-      this.$emit('add-pool',
+      this.$emit('add-selfmanaged-pool',
         this.enteredName,
         this.enteredSymbol,
         this.enteredPoolTokens,
@@ -159,7 +156,6 @@ export default {
         this.enteredMustAllowListLPs,
         parseFixed(this.enteredManagementAumFeePercentage, 18).toString(),
         this.enteredAumFeeId,
-        this.enteredTolerance,
         this.enteredSalt)
     },
     tokenASelect (e) {

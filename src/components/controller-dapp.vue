@@ -2,9 +2,24 @@
    <section>
     <hello-metamask/>
     <header>
-      <h1>Create auto-managed pool</h1>
+      <h1>Create managed pool</h1>
     </header>
-    <new-pool @add-pool="addPool"></new-pool>
+    <ul>
+        <li><strong>Auto-managed pools are created and owned by the controller.<br>
+          </strong><font size="1">
+            The controllers owner issues requests to the controller to take actions such as triggering balancing actions but
+          all pool shares and control rests with the controller.
+        </font></li>
+    </ul>
+    <new-automanaged-pool @add-automanaged-pool="addAutoManagedPool"></new-automanaged-pool>
+    <br>
+    <ul>
+        <li><strong>Self-managed pools are created and owned by the caller.<br>
+          </strong><font size="1">
+            Self-managed pools are managed pools created and owned by the caller.
+        </font></li>
+    </ul>
+    <new-selfmanaged-pool @add-selfmanaged-pool="addSelfManagedPool"></new-selfmanaged-pool>
     <header>
       <h1>Auto-managed pools</h1>
     </header>
@@ -27,7 +42,8 @@
 <script>
 import HelloMetamask from '@/components/hello-metamask'
 import PoolDetails from '@/components/pool-details'
-import NewPool from '@/components/new-pool'
+import NewAutomanagedPool from '@/components/new-automanaged-pool'
+import NewManagedPool from '@/components/new-selfmanaged-pool'
 export default {
   name: 'controller-dapp',
   data () {
@@ -44,10 +60,10 @@ export default {
     sleep (milliseconds) {
       return new Promise((resolve) => setTimeout(resolve, milliseconds))
     },
-    registerRun (idx, reserveAddress) {
+    registerRun (managedPoolAddress, reserveTokenAddress) {
       this.$store.state.registerControllerContractInstance().registerManagedPool(
-        idx,
-        reserveAddress,
+        managedPoolAddress,
+        reserveTokenAddress,
         {
           gas: 15696230,
           from: this.$store.state.web3.coinbase
@@ -60,9 +76,9 @@ export default {
         }
       )
     },
-    triggerRun (idx, id) {
+    triggerRun (managedPoolAddress) {
       this.$store.state.bondingCurveControllerContractInstance().runCheck(
-        idx,
+        managedPoolAddress,
         {
           gas: 15696230,
           from: this.$store.state.web3.coinbase
@@ -75,9 +91,9 @@ export default {
         }
       )
     },
-    SwitchSwapEnabledRun (switchSwapEnabledValue, address) {
+    SwitchSwapEnabledRun (switchSwapEnabledValue, managedPoolAddress) {
       this.$store.state.bondingCurveControllerContractInstance().setSwapEnabled(
-        address,
+        managedPoolAddress,
         switchSwapEnabledValue,
         {
           gas: 15696230,
@@ -91,7 +107,7 @@ export default {
         }
       )
     },
-    addPool (name, symbol, poolTokens, poolNormalisedWeights, poolAssetManagers, swapFeePercentage, swapEnabledOnStart, mustAllowListLPs, managementAumFeePercentage, aumFeeId, tolerance, salt) {
+    addAutoManagedPool (name, symbol, poolTokens, poolNormalisedWeights, poolAssetManagers, swapFeePercentage, swapEnabledOnStart, mustAllowListLPs, managementAumFeePercentage, aumFeeId, tolerance, salt) {
       this.$store.state.bondingCurveControllerContractInstance().createPool(
         name,
         symbol,
@@ -119,6 +135,34 @@ export default {
           }
         }
       )
+    },
+    addSelfManagedPool (name, symbol, poolTokens, poolNormalisedWeights, poolAssetManagers, swapFeePercentage, swapEnabledOnStart, mustAllowListLPs, managementAumFeePercentage, aumFeeId, salt) {
+      const params = { name: name, symbol: symbol, assetManagers: poolAssetManagers }
+      console.log('params: ')
+      console.log(params)
+      const settingsParams = { tokens: poolTokens, normalizedWeights: poolNormalisedWeights, swapFeePercentage: swapFeePercentage, swapEnabledOnStart: swapEnabledOnStart, mustAllowlistLPs: mustAllowListLPs, managementAumFeePercentage: managementAumFeePercentage, aumFeeId: aumFeeId }
+      console.log('settingsParams: ')
+      console.log(settingsParams)
+      console.log(this.$store.state.web3.coinbase)
+      this.$store.state.managedPoolFactoryContractInstance().create(
+        params,
+        settingsParams,
+        this.$store.state.web3.coinbase,
+        salt,
+        {
+          gas: 15696230,
+          value: this.$store.state.web3
+            .web3Instance()
+            .toWei(this.amount, 'ether'),
+          from: this.$store.state.web3.coinbase
+        },
+        (err, result) => {
+          if (err) {
+            console.log(err)
+            this.pending = false
+          }
+        }
+      )
     }
   },
   beforeCreate () {
@@ -128,7 +172,8 @@ export default {
   components: {
     'hello-metamask': HelloMetamask,
     'pool-details': PoolDetails,
-    'new-pool': NewPool
+    'new-automanaged-pool': NewAutomanagedPool,
+    'new-selfmanaged-pool': NewManagedPool
   },
   async mounted () {
     console.log('dispatching getContractInstance')
@@ -194,15 +239,12 @@ export default {
                         console.log(err)
                         this.pending = false
                       } else {
-                        console.log('FFFFFF')
-                        console.log(circuitBreakerState)
-
-                        const newPool = {
+                        const newAutomanagedPool = {
                           id: id,
                           address: this.poolAddresses[index],
                           isSwapEnabled: isSwapEnabled
                         }
-                        this.pools.push(newPool)
+                        this.pools.push(newAutomanagedPool)
                       }
                     }
                   )
