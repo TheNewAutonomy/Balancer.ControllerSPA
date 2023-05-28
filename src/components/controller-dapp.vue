@@ -2,11 +2,11 @@
    <section>
     <hello-metamask/>
     <header>
-      <h1>Create new pool</h1>
+      <h1>Create auto-managed pool</h1>
     </header>
     <new-pool @add-pool="addPool"></new-pool>
     <header>
-      <h1>Managed pools</h1>
+      <h1>Auto-managed pools</h1>
     </header>
     <ul>
       <li>
@@ -17,6 +17,7 @@
           :address="pool.address"
           :isSwapEnabled="pool.isSwapEnabled"
           @trigger="triggerRun"
+          @register="registerRun"
           @SwitchSwapEnabled="SwitchSwapEnabledRun"
         ></pool-details>
       </li>
@@ -43,8 +44,24 @@ export default {
     sleep (milliseconds) {
       return new Promise((resolve) => setTimeout(resolve, milliseconds))
     },
+    registerRun (idx, reserveAddress) {
+      this.$store.state.registerControllerContractInstance().registerManagedPool(
+        idx,
+        reserveAddress,
+        {
+          gas: 15696230,
+          from: this.$store.state.web3.coinbase
+        },
+        (err, result) => {
+          if (err) {
+            console.log(err)
+            this.pending = false
+          }
+        }
+      )
+    },
     triggerRun (idx, id) {
-      this.$store.state.controllerContractInstance().runCheck(
+      this.$store.state.bondingCurveControllerContractInstance().runCheck(
         idx,
         {
           gas: 15696230,
@@ -59,7 +76,7 @@ export default {
       )
     },
     SwitchSwapEnabledRun (switchSwapEnabledValue, address) {
-      this.$store.state.controllerContractInstance().setSwapEnabled(
+      this.$store.state.bondingCurveControllerContractInstance().setSwapEnabled(
         address,
         switchSwapEnabledValue,
         {
@@ -75,7 +92,7 @@ export default {
       )
     },
     addPool (name, symbol, poolTokens, poolNormalisedWeights, poolAssetManagers, swapFeePercentage, swapEnabledOnStart, mustAllowListLPs, managementAumFeePercentage, aumFeeId, tolerance, salt) {
-      this.$store.state.controllerContractInstance().createPool(
+      this.$store.state.bondingCurveControllerContractInstance().createPool(
         name,
         symbol,
         poolTokens,
@@ -119,11 +136,11 @@ export default {
 
     this.pools = []
 
-    while (this.$store.state.controllerContractInstance === null) {
+    while (this.$store.state.bondingCurveControllerContractInstance === null) {
       await this.sleep(100)
     }
 
-    await this.$store.state.controllerContractInstance().getPoolsUnderManagement.call(
+    await this.$store.state.bondingCurveControllerContractInstance().getPoolsUnderManagement.call(
       {
         from: this.$store.state.web3.coinbase
       },

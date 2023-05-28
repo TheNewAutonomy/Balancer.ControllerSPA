@@ -7,7 +7,8 @@ let state = {
     balance: null,
     error: null
   },
-  controllerContractInstance: null,
+  bondingCurveControllerContractInstance: null,
+  reserveControllerContractInstance: null,
   poolContractInstance: null
 }
 export default state

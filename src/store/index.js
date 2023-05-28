@@ -3,7 +3,8 @@ import Vuex from 'vuex'
 import state from './state'
 import getWeb3 from '../util/getWeb3'
 import pollWeb3 from '../util/pollWeb3'
-import getContract from '../util/getContract'
+import getBondingCurveControllerContract from '../util/getBondingCurveControllerContract'
+import getReserveControllerContract from '../util/getReserveControllerContract'
 import getPoolContract from '../util/getPoolContract'
 
 Vue.use(Vuex)
@@ -28,9 +29,13 @@ export const store = new Vuex.Store({
       state.web3.coinbase = payload.coinbase
       state.web3.balance = parseInt(payload.balance, 10)
     },
-    registerContractInstance (state, payload) {
-      console.log('Controller contract instance: ', payload)
-      state.controllerContractInstance = () => payload
+    registerBondingCurveContractInstance (state, payload) {
+      console.log('Bonding Curve Controller contract instance: ', payload)
+      state.bondingCurveControllerContractInstance = () => payload
+    },
+    registerReserveContractInstance (state, payload) {
+      console.log('Reserve Controller contract instance: ', payload)
+      state.reserveControllerContractInstance = () => payload
     },
     registerPoolContractInstance (state, payload) {
       console.log('Pool contract instance: ', payload)
@@ -56,8 +61,12 @@ export const store = new Vuex.Store({
       commit('pollWeb3Instance', payload)
     },
     getContractInstance ({commit}) {
-      getContract.then(result => {
-        commit('registerContractInstance', result)
+      getBondingCurveControllerContract.then(result => {
+        commit('registerBondingCurveContractInstance', result)
+      }).catch(e => console.log(e))
+
+      getReserveControllerContract.then(result => {
+        commit('registerReserveContractInstance', result)
       }).catch(e => console.log(e))
     },
     getPoolContractInstance ({commit}, pool) {

@@ -1,5 +1,10 @@
 <template>
     <form @submit.prevent="submitData">
+
+      <button @click="toggleDetails">
+        {{ detailsAreVisible ? "Hide" : "Show" }} Form
+      </button>
+      <div v-if="detailsAreVisible">
         <div>
             <label>Name</label>
             <input type="text" v-model="enteredName" />
@@ -54,6 +59,7 @@
         <div>
             <button>Add Pool</button>
         </div>
+      </div>
     </form>
 </template>
 
@@ -66,6 +72,7 @@ export default {
   emits: ['add-pool'],
   data () {
     return {
+      detailsAreVisible: false,
       enteredName: '',
       enteredSymbol: '',
       enteredPoolTokens: [],
@@ -121,6 +128,7 @@ export default {
         { value: '0x2C98Ebada737f6f75B410c0eaa66A19B110796b5', text: 'PRIME' },
         { value: '0x29dFce9c22003A4999930382Fd00f9Fd6133Acd1', text: 'SUSHI' },
         { value: '0x8427bD503dd3169cCC9aFF7326c15258Bc305478', text: 'SYMM' },
+        { value: '0xB13d7477162844FE0d8F36A6808E5897ed158252', text: '** TEST' },
         { value: '0x00Be915B9dCf56a3CBE739D9B9c202ca692409EC', text: 'UBE' },
         { value: '0x2A3684e9Dc20B857375EA04235F2F7edBe818FA7', text: 'USDC' }
       ],
@@ -129,6 +137,9 @@ export default {
     }
   },
   methods: {
+    toggleDetails () {
+      this.detailsAreVisible = !this.detailsAreVisible
+    },
     submitData () {
       this.enteredPoolTokens = [
         this.selectedTokenA,

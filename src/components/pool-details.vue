@@ -14,8 +14,19 @@
           </button>
         </li>
       </ul>
-      <button @click="$emit('trigger', address, id)">Trigger
-    </button>
+      <div v-if="detailsAreVisible">
+      <button @click="$emit('trigger', address, id)">Trigger</button>
+      <div style="padding:10px;">
+          <label>Reserve Token</label>
+          <input type="text" v-model="enteredReserveToken" />
+      </div>
+      <button @click="$emit('register', address, enteredReserveToken)">Register</button>
+      <br>
+      <div style="padding:10px;">
+        <button @click="$emit('buy', address, id)">Buy Reserve</button>
+        <button @click="$emit('sell', address, id)">Buy Collateral</button>
+      </div>
+      </div>
     </li>
   </template>
 
@@ -39,7 +50,8 @@ export default {
   emits: ['trigger', 'SwitchSwapEnabled'],
   data () {
     return {
-      detailsAreVisible: false
+      detailsAreVisible: false,
+      enteredReserveToken: ''
     }
   },
   methods: {
