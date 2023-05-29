@@ -37,6 +37,10 @@
         ></pool-details>
       </li>
     </ul>
+    <header>
+      <h1>Self-managed pool</h1>
+    </header>
+    <register-selfmanaged-pool @register-selfmanaged-pool="registerSelfManagedPool" @deregister-selfmanaged-pool="deregisterSelfManagedPool"></register-selfmanaged-pool>
   </section>
 </template>
 <script>
@@ -44,6 +48,7 @@ import HelloMetamask from '@/components/hello-metamask'
 import PoolDetails from '@/components/pool-details'
 import NewAutomanagedPool from '@/components/new-automanaged-pool'
 import NewManagedPool from '@/components/new-selfmanaged-pool'
+import NewRegisterSelfManagedPool from '@/components/register-selfmanaged-pool'
 export default {
   name: 'controller-dapp',
   data () {
@@ -136,6 +141,44 @@ export default {
         }
       )
     },
+    registerSelfManagedPool (poolAddress, reserveTokenAddress) {
+      this.$store.state.reserveControllerContractInstance().registerManagedPool(
+        poolAddress,
+        reserveTokenAddress,
+        {
+          gas: 15696230,
+          value: this.$store.state.web3
+            .web3Instance()
+            .toWei(this.amount, 'ether'),
+          from: this.$store.state.web3.coinbase
+        },
+        (err, result) => {
+          if (err) {
+            console.log(err)
+            this.pending = false
+          }
+        }
+      )
+    },
+    deregisterSelfManagedPool (poolAddress, reserveTokenAddress) {
+      this.$store.state.reserveControllerContractInstance().deregisterManagedPool(
+        poolAddress,
+        reserveTokenAddress,
+        {
+          gas: 15696230,
+          value: this.$store.state.web3
+            .web3Instance()
+            .toWei(this.amount, 'ether'),
+          from: this.$store.state.web3.coinbase
+        },
+        (err, result) => {
+          if (err) {
+            console.log(err)
+            this.pending = false
+          }
+        }
+      )
+    },
     addSelfManagedPool (name, symbol, poolTokens, poolNormalisedWeights, poolAssetManagers, swapFeePercentage, swapEnabledOnStart, mustAllowListLPs, managementAumFeePercentage, aumFeeId, salt) {
       const params = { name: name, symbol: symbol, assetManagers: poolAssetManagers }
       console.log('params: ')
@@ -173,7 +216,8 @@ export default {
     'hello-metamask': HelloMetamask,
     'pool-details': PoolDetails,
     'new-automanaged-pool': NewAutomanagedPool,
-    'new-selfmanaged-pool': NewManagedPool
+    'new-selfmanaged-pool': NewManagedPool,
+    'register-selfmanaged-pool': NewRegisterSelfManagedPool
   },
   async mounted () {
     console.log('dispatching getContractInstance')
