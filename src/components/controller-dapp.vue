@@ -180,18 +180,19 @@ export default {
       )
     },
     addSelfManagedPool (name, symbol, poolTokens, poolNormalisedWeights, poolAssetManagers, swapFeePercentage, swapEnabledOnStart, mustAllowListLPs, managementAumFeePercentage, aumFeeId, salt) {
-      const params = { name: name, symbol: symbol, assetManagers: poolAssetManagers }
-      console.log('params: ')
-      console.log(params)
-      const settingsParams = { tokens: poolTokens, normalizedWeights: poolNormalisedWeights, swapFeePercentage: swapFeePercentage, swapEnabledOnStart: swapEnabledOnStart, mustAllowlistLPs: mustAllowListLPs, managementAumFeePercentage: managementAumFeePercentage, aumFeeId: aumFeeId }
-      console.log('settingsParams: ')
-      console.log(settingsParams)
-      console.log(this.$store.state.web3.coinbase)
-      this.$store.state.managedPoolFactoryContractInstance().create(
-        params,
-        settingsParams,
-        this.$store.state.web3.coinbase,
+      this.$store.state.reserveControllerContractInstance().createPool(
+        name,
+        symbol,
+        poolTokens,
+        poolNormalisedWeights,
+        poolAssetManagers,
+        swapFeePercentage,
+        swapEnabledOnStart,
+        mustAllowListLPs,
+        managementAumFeePercentage,
+        aumFeeId,
         salt,
+        poolTokens[0],
         {
           gas: 15696230,
           value: this.$store.state.web3
@@ -228,7 +229,6 @@ export default {
     while (this.$store.state.bondingCurveControllerContractInstance === null) {
       await this.sleep(100)
     }
-
     await this.$store.state.bondingCurveControllerContractInstance().getPoolsUnderManagement.call(
       {
         from: this.$store.state.web3.coinbase

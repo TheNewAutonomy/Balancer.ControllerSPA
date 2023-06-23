@@ -80,7 +80,7 @@ export default {
       enteredMustAllowListLPs: false,
       enteredManagementAumFeePercentage: '0.25',
       enteredAumFeeId: 3,
-      enteredSalt: '0x0000000000000000000000000000000000000000000000000000000000000001',
+      enteredSalt: '0x0000000000000000000000000000000000000000000000000000000000000002',
       selectedTokenA: null,
       selectedTokenB: null,
       tokenOptions: [

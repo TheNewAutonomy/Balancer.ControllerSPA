@@ -9,19 +9,19 @@ import Web3 from 'web3'
 */
 
 let getWeb3 = new Promise(function (resolve, reject) {
-  // Check for injected web3 (mist/metamask)
-  var web3js = window.web3
-  if (typeof web3js !== 'undefined') {
-    var web3 = new Web3(web3js.currentProvider)
-    resolve({
-      injectedWeb3: web3.isConnected(),
-      web3 () {
-        return web3
-      }
+  if (window.ethereum) {
+    window.ethereum.enable().then(function (acc) {
+      var account = acc[0]
+      console.log('TTTTT')
+      console.log(account)
+      var web3 = new Web3(window.ethereum)
+      resolve({
+        injectedWeb3: true,
+        web3 () {
+          return web3
+        }
+      })
     })
-  } else {
-    // web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:7545')) GANACHE FALLBACK
-    reject(new Error('Unable to connect to Metamask'))
   }
 })
   .then(result => {

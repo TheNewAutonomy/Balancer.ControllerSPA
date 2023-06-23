@@ -9,7 +9,6 @@ let state = {
   },
   bondingCurveControllerContractInstance: null,
   reserveControllerContractInstance: null,
-  poolContractInstance: null,
-  managedPoolFactoryContractInstance: null
+  poolContractInstance: null
 }
 export default state
