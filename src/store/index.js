@@ -6,6 +6,7 @@ import pollWeb3 from '../util/pollWeb3'
 import getBondingCurveControllerContract from '../util/getBondingCurveControllerContract'
 import getReserveControllerContract from '../util/getReserveControllerContract'
 import getPoolContract from '../util/getPoolContract'
+import getReservePoolContract from '../util/getReservePoolContract'
 
 Vue.use(Vuex)
 export const store = new Vuex.Store({
@@ -44,6 +45,14 @@ export const store = new Vuex.Store({
         state.poolContractInstance = []
       }
       state.poolContractInstance.push(() => payload)
+    },
+    registerReservePoolContractInstance (state, payload) {
+      console.log('Reserve pool contract instance: ', payload)
+
+      if (state.reservePoolContractInstance === null) {
+        state.reservePoolContractInstance = []
+      }
+      state.reservePoolContractInstance.push(() => payload)
     }
   },
   actions: {
@@ -71,6 +80,9 @@ export const store = new Vuex.Store({
     },
     getPoolContractInstance ({commit}, pool) {
       getPoolContract(pool, {commit})
+    },
+    getReservePoolContractInstance ({commit}, pool) {
+      getReservePoolContract(pool, {commit})
     }
   }
 })

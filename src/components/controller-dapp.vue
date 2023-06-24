@@ -32,7 +32,6 @@
           :address="pool.address"
           :isSwapEnabled="pool.isSwapEnabled"
           @trigger="triggerRun"
-          @register="registerRun"
           @SwitchSwapEnabled="SwitchSwapEnabledRun"
         ></pool-details>
       </li>
@@ -40,12 +39,25 @@
     <header>
       <h1>Self-managed pool</h1>
     </header>
+    <ul>
+      <li>
+        <reservepool-details
+          v-for="pool in reservePools"
+          :key="pool.id"
+          :id="pool.id"
+          :address="pool.address"
+          :isSwapEnabled="pool.isSwapEnabled"
+          @SwitchSwapEnabled="SwitchSwapEnabledRun"
+        ></reservepool-details>
+      </li>
+    </ul>
     <register-selfmanaged-pool @register-selfmanaged-pool="registerSelfManagedPool" @deregister-selfmanaged-pool="deregisterSelfManagedPool"></register-selfmanaged-pool>
   </section>
 </template>
 <script>
 import HelloMetamask from '@/components/hello-metamask'
 import PoolDetails from '@/components/pool-details'
+import reservePoolDetails from '@/components/reservepool-details'
 import NewAutomanagedPool from '@/components/new-automanaged-pool'
 import NewManagedPool from '@/components/new-selfmanaged-pool'
 import NewRegisterSelfManagedPool from '@/components/register-selfmanaged-pool'
@@ -57,6 +69,13 @@ export default {
       ],
       poolCount: 0,
       poolAddresses: [
+
+      ],
+      reservePools: [
+
+      ],
+      reservePoolCount: 0,
+      reservePoolAddresses: [
 
       ]
     }
@@ -216,6 +235,7 @@ export default {
   components: {
     'hello-metamask': HelloMetamask,
     'pool-details': PoolDetails,
+    'reservepool-details': reservePoolDetails,
     'new-automanaged-pool': NewAutomanagedPool,
     'new-selfmanaged-pool': NewManagedPool,
     'register-selfmanaged-pool': NewRegisterSelfManagedPool
@@ -289,6 +309,76 @@ export default {
                           isSwapEnabled: isSwapEnabled
                         }
                         this.pools.push(newAutomanagedPool)
+                      }
+                    }
+                  )
+                }
+              }
+            )
+          }
+        }
+      )
+    })
+    await this.$store.state.reserveControllerContractInstance().getRegisteredPools.call(
+      {
+        from: this.$store.state.web3.coinbase
+      },
+      (err, poolSet) => {
+        if (err) {
+          console.log(err)
+          this.pending = false
+        } else {
+          this.reservePools = []
+          poolSet.forEach((item, index) => {
+            console.log('dispatching getReservePoolContractInstance')
+            this.$store.dispatch('getReservePoolContractInstance', {
+              address: item
+            })
+            this.reservePoolAddresses.push(item)
+          })
+          this.reservePoolCount = poolSet.length
+        }
+      }
+    )
+    while (this.$store.state.reservePoolContractInstance === null || this.$store.state.reservePoolContractInstance.length !== this.reservePoolCount) {
+      await this.sleep(100)
+    }
+    this.reservePools = []
+    this.$store.state.reservePoolContractInstance.forEach((poolId, index) => {
+      poolId().getPoolId.call(
+        {
+          from: this.$store.state.web3.coinbase
+        },
+        (err, id) => {
+          if (err) {
+            console.log(err)
+            this.pending = false
+          } else {
+            poolId().getSwapEnabled.call(
+              {
+                from: this.$store.state.web3.coinbase
+              },
+              (err, isSwapEnabled) => {
+                if (err) {
+                  console.log(err)
+                  this.pending = false
+                } else {
+                  poolId().getCircuitBreakerState.call(
+                    this.reservePoolAddresses[index],
+                    {
+                      from: this.$store.state.web3.coinbase
+                    },
+                    (err, circuitBreakerState) => {
+                      if (err) {
+                        console.log(err)
+                        this.pending = false
+                      } else {
+                        const newSelfmanagedPool = {
+                          id: id,
+                          address: this.reservePoolAddresses[index],
+                          isSwapEnabled: isSwapEnabled
+                        }
+                        this.reservePools.push(newSelfmanagedPool)
                       }
                     }
                   )

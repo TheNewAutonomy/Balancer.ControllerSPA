@@ -15,14 +15,17 @@
         </li>
       </ul>
       <div v-if="detailsAreVisible">
-      <button @click="$emit('trigger', address, id)">Trigger</button>
+      <div style="padding:10px;">
+        <button @click="$emit('buy', address, id)">Buy Reserve</button>
+        <button @click="$emit('sell', address, id)">Buy Collateral</button>
+      </div>
       </div>
     </li>
   </template>
 
 <script>
 export default {
-  name: 'pool-details',
+  name: 'reservepool-details',
   props: {
     id: {
       type: String,
@@ -37,7 +40,7 @@ export default {
       required: true
     }
   },
-  emits: ['trigger', 'SwitchSwapEnabled'],
+  emits: ['SwitchSwapEnabled'],
   data () {
     return {
       detailsAreVisible: false
