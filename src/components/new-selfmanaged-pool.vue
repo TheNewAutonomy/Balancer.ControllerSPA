@@ -14,7 +14,9 @@
             <input type="text" v-model="enteredSymbol" />
         </div>
         <div>
+          Reserve Token:
           <b-form-select v-model="selectedTokenA" :options="tokenOptions"></b-form-select>
+          Collateral Token:
           <b-form-select v-model="selectedTokenB" :options="tokenOptions"></b-form-select>
         </div>
         <div>
@@ -81,8 +83,8 @@ export default {
       enteredManagementAumFeePercentage: '0.25',
       enteredAumFeeId: 3,
       enteredSalt: '0x0000000000000000000000000000000000000000000000000000000000000002',
-      selectedTokenA: null,
-      selectedTokenB: null,
+      selectedTokenA: '0x785fA6c4383c42deF4182C1820D23f1196a112CE',
+      selectedTokenB: '0x900B0c0762f7eE2D68eb07bb5d17629298aECb9A',
       tokenOptions: [
         /*
         { value: null, text: 'Please select token' },
@@ -103,7 +105,8 @@ export default {
         { value: '0x6A023CCd1ff6F2045C3309768eAd9E68F978f6e1', text: 'WETH' },
         { value: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d', text: 'WXDAI' }
         */
-        { value: null, text: 'Please select token' },
+        { value: '0x785fA6c4383c42deF4182C1820D23f1196a112CE', text: '** TEST 1' },
+        { value: '0x900B0c0762f7eE2D68eb07bb5d17629298aECb9A', text: '** TEST 2' },
         { value: '0x20677d4f3d0F08e735aB512393524A3CfCEb250C', text: 'ARI' },
         { value: '0xD629eb00dEced2a080B7EC630eF6aC117e614f1b', text: 'CBTC' },
         { value: '0xA287A3722c367849eFA5c76e96BE36efd65C290e', text: 'CDEFI' },
@@ -124,8 +127,6 @@ export default {
         { value: '0x2C98Ebada737f6f75B410c0eaa66A19B110796b5', text: 'PRIME' },
         { value: '0x29dFce9c22003A4999930382Fd00f9Fd6133Acd1', text: 'SUSHI' },
         { value: '0x8427bD503dd3169cCC9aFF7326c15258Bc305478', text: 'SYMM' },
-        { value: '0x785fA6c4383c42deF4182C1820D23f1196a112CE', text: '** TEST 1' },
-        { value: '0x900B0c0762f7eE2D68eb07bb5d17629298aECb9A', text: '** TEST 2' },
         { value: '0x00Be915B9dCf56a3CBE739D9B9c202ca692409EC', text: 'UBE' },
         { value: '0x2A3684e9Dc20B857375EA04235F2F7edBe818FA7', text: 'USDC' }
       ],
@@ -157,10 +158,6 @@ export default {
         parseFixed(this.enteredManagementAumFeePercentage, 18).toString(),
         this.enteredAumFeeId,
         this.enteredSalt)
-    },
-    tokenASelect (e) {
-      e.preventDefault()
-      this.enteredName = e
     }
   }
 }
