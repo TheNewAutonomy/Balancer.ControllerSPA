@@ -48,6 +48,8 @@
           :address="pool.address"
           :isSwapEnabled="pool.isSwapEnabled"
           @SwitchSwapEnabled="SwitchSwapEnabledRun"
+          @buy="buyRun"
+          @sell="sellRun"
         ></reservepool-details>
       </li>
     </ul>
@@ -85,7 +87,7 @@ export default {
       return new Promise((resolve) => setTimeout(resolve, milliseconds))
     },
     registerRun (managedPoolAddress, reserveTokenAddress) {
-      this.$store.state.registerControllerContractInstance().registerManagedPool(
+      this.$store.state.reserveControllerContractInstance().registerManagedPool(
         managedPoolAddress,
         reserveTokenAddress,
         {
@@ -103,6 +105,41 @@ export default {
     triggerRun (managedPoolAddress) {
       this.$store.state.bondingCurveControllerContractInstance().runCheck(
         managedPoolAddress,
+        {
+          gas: 15696230,
+          from: this.$store.state.web3.coinbase
+        },
+        (err, result) => {
+          if (err) {
+            console.log(err)
+            this.pending = false
+          }
+        }
+      )
+    },
+    buyRun (managedPoolAddress, amount, recipient) {
+      this.$store.state.reserveControllerContractInstance().buyReserveToken(
+        managedPoolAddress,
+        amount,
+        recipient,
+        {
+          gas: 15696230,
+          from: this.$store.state.web3.coinbase
+        },
+        (err, result) => {
+          if (err) {
+            console.log(err)
+            this.pending = false
+          }
+        }
+      )
+    },
+    sellRun (reserveTokenAddress, managedPoolAddress, amount, recipient) {
+      this.$store.state.reserveControllerContractInstance().sellReserveToken(
+        reserveTokenAddress,
+        managedPoolAddress,
+        amount,
+        recipient,
         {
           gas: 15696230,
           from: this.$store.state.web3.coinbase
@@ -198,7 +235,9 @@ export default {
         }
       )
     },
-    addSelfManagedPool (name, symbol, poolTokens, poolNormalisedWeights, poolAssetManagers, swapFeePercentage, swapEnabledOnStart, mustAllowListLPs, managementAumFeePercentage, aumFeeId, salt) {
+    addSelfManagedPool (name, symbol, poolTokens, poolNormalisedWeights, poolAssetManagers, swapFeePercentage, swapEnabledOnStart, mustAllowListLPs, managementAumFeePercentage, aumFeeId, salt, reserveToken) {
+      console.log('PPPPPP')
+      console.log(reserveToken)
       this.$store.state.reserveControllerContractInstance().createPool(
         name,
         symbol,
@@ -211,7 +250,7 @@ export default {
         managementAumFeePercentage,
         aumFeeId,
         salt,
-        poolTokens[0],
+        reserveToken,
         {
           gas: 15696230,
           value: this.$store.state.web3

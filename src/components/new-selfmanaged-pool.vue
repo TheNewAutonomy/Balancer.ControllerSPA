@@ -14,9 +14,9 @@
             <input type="text" v-model="enteredSymbol" />
         </div>
         <div>
-          Reserve Token:
+          Token 1:
           <b-form-select v-model="selectedTokenA" :options="tokenOptions"></b-form-select>
-          Collateral Token:
+          Token 2:
           <b-form-select v-model="selectedTokenB" :options="tokenOptions"></b-form-select>
         </div>
         <div>
@@ -33,6 +33,10 @@
         <div>
           <label>AUM Fee %</label>
           <input type="text" v-model="enteredManagementAumFeePercentage" />
+        </div>
+        <div>
+          <label>Reserve Token</label>
+          <input type="text" v-model="reserveToken" />
         </div>
         <div>
           <b-form-checkbox
@@ -83,11 +87,11 @@ export default {
       enteredManagementAumFeePercentage: '0.25',
       enteredAumFeeId: 3,
       enteredSalt: '0x0000000000000000000000000000000000000000000000000000000000000002',
-      selectedTokenA: '0x785fA6c4383c42deF4182C1820D23f1196a112CE',
+      selectedTokenA: '0x471EcE3750Da237f93B8E339c536989b8978a438',
       selectedTokenB: '0x900B0c0762f7eE2D68eb07bb5d17629298aECb9A',
+      reserveToken: '0xB13d7477162844FE0d8F36A6808E5897ed158252',
       tokenOptions: [
         /*
-        { value: null, text: 'Please select token' },
         { value: '0x3a97704a1b25F08aa230ae53B352e2e72ef52843', text: 'AGVE' },
         { value: '0x177127622c4A00F3d409B75571e12cB3c8973d3c', text: 'COW' },
         { value: '0x44fA8E6f47987339850636F88629646662444217', text: 'DAI' },
@@ -105,8 +109,7 @@ export default {
         { value: '0x6A023CCd1ff6F2045C3309768eAd9E68F978f6e1', text: 'WETH' },
         { value: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d', text: 'WXDAI' }
         */
-        { value: '0x785fA6c4383c42deF4182C1820D23f1196a112CE', text: '** TEST 1' },
-        { value: '0x900B0c0762f7eE2D68eb07bb5d17629298aECb9A', text: '** TEST 2' },
+        { value: '0x900B0c0762f7eE2D68eb07bb5d17629298aECb9A', text: '*TEST' },
         { value: '0x20677d4f3d0F08e735aB512393524A3CfCEb250C', text: 'ARI' },
         { value: '0xD629eb00dEced2a080B7EC630eF6aC117e614f1b', text: 'CBTC' },
         { value: '0xA287A3722c367849eFA5c76e96BE36efd65C290e', text: 'CDEFI' },
@@ -157,7 +160,8 @@ export default {
         this.enteredMustAllowListLPs,
         parseFixed(this.enteredManagementAumFeePercentage, 18).toString(),
         this.enteredAumFeeId,
-        this.enteredSalt)
+        this.enteredSalt,
+        this.reserveToken)
     }
   }
 }
