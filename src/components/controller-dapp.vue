@@ -176,12 +176,11 @@ export default {
       }
       console.log('defaults: ')
       console.log(defaults)
-
       this.$store.state.vaultContractInstance().methods.joinPool(
         poolId,
         this.$store.state.web3.coinbase,
         this.$store.state.web3.coinbase,
-        [defaults])
+        defaults)
         .send({
           gas: 15696230,
           from: this.$store.state.web3.coinbase
