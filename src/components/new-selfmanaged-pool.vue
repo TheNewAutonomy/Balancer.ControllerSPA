@@ -87,11 +87,12 @@ export default {
       enteredManagementAumFeePercentage: '0.25',
       enteredAumFeeId: 3,
       enteredSalt: '0x0000000000000000000000000000000000000000000000000000000000000002',
-      selectedTokenA: '0x471EcE3750Da237f93B8E339c536989b8978a438',
-      selectedTokenB: '0x900B0c0762f7eE2D68eb07bb5d17629298aECb9A',
-      reserveToken: '0xB13d7477162844FE0d8F36A6808E5897ed158252',
+      selectedTokenA: '0x900B0c0762f7eE2D68eb07bb5d17629298aECb9A',
+      selectedTokenB: '0x785fA6c4383c42deF4182C1820D23f1196a112CE',
+      reserveToken: '0x98A90EcFB163d138eC289D05362f20613A0C02aC',
       tokenOptions: [
         /*
+        // Gnosis set
         { value: '0x3a97704a1b25F08aa230ae53B352e2e72ef52843', text: 'AGVE' },
         { value: '0x177127622c4A00F3d409B75571e12cB3c8973d3c', text: 'COW' },
         { value: '0x44fA8E6f47987339850636F88629646662444217', text: 'DAI' },
@@ -109,7 +110,18 @@ export default {
         { value: '0x6A023CCd1ff6F2045C3309768eAd9E68F978f6e1', text: 'WETH' },
         { value: '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d', text: 'WXDAI' }
         */
+        // Celo set
+        { value: '0xBAAB46E28388d2779e6E31Fd00cF0e5Ad95E327B', text: 'wBTC2' },
+        { value: '0x471EcE3750Da237f93B8E339c536989b8978a438', text: 'CELO' },
+        { value: '0x122013fd7dF1C6F636a5bb8f03108E876548b455', text: 'WETHv2' },
+        { value: '0xD8763CBa276a3738E6DE85b4b3bF5FDed6D6cA73', text: 'cEUR' },
+        { value: '0x72d7f41eF46a988b13530F67423B36CD9cADBc3a', text: 'LINK' },
+        { value: '0x2A3684e9Dc20B857375EA04235F2F7edBe818FA7', text: 'USDC' },
+        { value: '0xf6D198Cd2A85bB2F3021cDBDAb6B878474079Be7', text: 'USDT' },
+        { value: '------------------------------------------', text: '----' },
+
         { value: '0x900B0c0762f7eE2D68eb07bb5d17629298aECb9A', text: '*TEST' },
+        { value: '0x785fA6c4383c42deF4182C1820D23f1196a112CE', text: '*TEST 2' },
         { value: '0x20677d4f3d0F08e735aB512393524A3CfCEb250C', text: 'ARI' },
         { value: '0xD629eb00dEced2a080B7EC630eF6aC117e614f1b', text: 'CBTC' },
         { value: '0xA287A3722c367849eFA5c76e96BE36efd65C290e', text: 'CDEFI' },

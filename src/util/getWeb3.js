@@ -1,4 +1,6 @@
-import Web3 from 'web3'
+import MetaMaskSDK from '@metamask/sdk'
+var Web3 = require('web3')
+var web3 = new Web3(Web3.givenProvider)
 
 /*
 * 1. Check for injected web3 (mist/metamask)
@@ -8,62 +10,49 @@ import Web3 from 'web3'
 * 5. Get user balance
 */
 
-let getWeb3 = new Promise(function (resolve, reject) {
-  if (window.ethereum) {
-    window.ethereum.enable().then(function (acc) {
-      var account = acc[0]
-      console.log('TTTTT')
-      console.log(account)
-      var web3 = new Web3(window.ethereum)
-      resolve({
-        injectedWeb3: true,
-        web3 () {
-          return web3
-        }
-      })
-    })
-  }
+const sdk = new MetaMaskSDK({
+  shouldShimWeb3: false,
+  showQRCode: true
 })
-  .then(result => {
-    return new Promise(function (resolve, reject) {
-      // Retrieve network ID
-      result.web3().version.getNetwork((err, networkId) => {
-        if (err) {
-          // If we can't find a networkId keep result the same and reject the promise
-          reject(new Error('Unable to retrieve network ID'))
-        } else {
-          // Assign the networkId property to our result and resolve promise
-          result = Object.assign({}, result, {networkId})
-          resolve(result)
-        }
-      })
-    })
+
+const ethereum = sdk.getProvider()
+
+const hexToDecimal = hex => parseInt(hex, 16)
+
+let coinbase = ''
+let chainId = ''
+let balance = 1
+
+const start = async (resolve) => {
+  const accounts = await ethereum.request({
+    method: 'eth_requestAccounts',
+    params: []
   })
-  .then(result => {
-    return new Promise(function (resolve, reject) {
-      // Retrieve coinbase
-      result.web3().eth.getCoinbase((err, coinbase) => {
-        if (err) {
-          reject(new Error('Unable to retrieve coinbase'))
-        } else {
-          result = Object.assign({}, result, { coinbase })
-          resolve(result)
-        }
-      })
-    })
+  coinbase = accounts[0]
+  console.log('account: ' + accounts)
+
+  chainId = await ethereum.request({
+    method: 'eth_chainId',
+    params: []
   })
-  .then(result => {
-    return new Promise(function (resolve, reject) {
-      // Retrieve balance for coinbase
-      result.web3().eth.getBalance(result.coinbase, (err, balance) => {
-        if (err) {
-          reject(new Error('Unable to retrieve balance for address: ' + result.coinbase))
-        } else {
-          result = Object.assign({}, result, { balance })
-          resolve(result)
-        }
-      })
-    })
+
+  const dec = hexToDecimal(chainId)
+  console.log('chainId: ' + dec)
+
+  balance = await ethereum.request({ method: 'eth_getBalance', params: [accounts[0], 'latest'] })
+  console.log('balance: ' + balance)
+
+  resolve({
+    injectedWeb3: true,
+    networkId: dec,
+    coinbase: coinbase,
+    balance: balance,
+    web3: web3
   })
+}
+
+let getWeb3 = new Promise(function (resolve, reject) {
+  start(resolve)
+})
 
 export default getWeb3

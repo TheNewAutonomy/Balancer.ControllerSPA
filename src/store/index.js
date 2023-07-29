@@ -5,6 +5,7 @@ import getWeb3 from '../util/getWeb3'
 import pollWeb3 from '../util/pollWeb3'
 import getBondingCurveControllerContract from '../util/getBondingCurveControllerContract'
 import getReserveControllerContract from '../util/getReserveControllerContract'
+import getVaultContract from '../util/getVaultContract'
 import getPoolContract from '../util/getPoolContract'
 import getReservePoolContract from '../util/getReservePoolContract'
 
@@ -19,9 +20,8 @@ export const store = new Vuex.Store({
       let web3Copy = state.web3
       web3Copy.coinbase = result.coinbase
       web3Copy.networkId = result.networkId
-      web3Copy.balance = parseInt(result.balance, 10)
+      web3Copy.balance = parseInt(result.balance)
       web3Copy.isInjected = result.injectedWeb3
-      web3Copy.web3Instance = result.web3
       state.web3 = web3Copy
       pollWeb3()
     },
@@ -37,6 +37,10 @@ export const store = new Vuex.Store({
     registerReserveContractInstance (state, payload) {
       console.log('Reserve Controller contract instance: ', payload)
       state.reserveControllerContractInstance = () => payload
+    },
+    registerVaultContractInstance (state, payload) {
+      console.log('Vault contract instance: ', payload)
+      state.vaultContractInstance = () => payload
     },
     registerPoolContractInstance (state, payload) {
       console.log('Pool contract instance: ', payload)
@@ -76,6 +80,10 @@ export const store = new Vuex.Store({
 
       getReserveControllerContract.then(result => {
         commit('registerReserveContractInstance', result)
+      }).catch(e => console.log(e))
+
+      getVaultContract.then(result => {
+        commit('registerVaultContractInstance', result)
       }).catch(e => console.log(e))
     },
     getPoolContractInstance ({commit}, pool) {

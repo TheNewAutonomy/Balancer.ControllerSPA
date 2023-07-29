@@ -50,6 +50,7 @@
           @SwitchSwapEnabled="SwitchSwapEnabledRun"
           @buy="buyRun"
           @sell="sellRun"
+          @add="addRun"
         ></reservepool-details>
       </li>
     </ul>
@@ -57,6 +58,8 @@
   </section>
 </template>
 <script>
+import { defaultAbiCoder } from '@ethersproject/abi'
+import BigNumber from 'bignumber.js'
 import HelloMetamask from '@/components/hello-metamask'
 import PoolDetails from '@/components/pool-details'
 import reservePoolDetails from '@/components/reservepool-details'
@@ -87,62 +90,125 @@ export default {
       return new Promise((resolve) => setTimeout(resolve, milliseconds))
     },
     registerRun (managedPoolAddress, reserveTokenAddress) {
-      this.$store.state.reserveControllerContractInstance().registerManagedPool(
+      this.$store.state.reserveControllerContractInstance().methods.registerManagedPool(
         managedPoolAddress,
-        reserveTokenAddress,
-        {
-          gas: 15696230,
-          from: this.$store.state.web3.coinbase
-        },
-        (err, result) => {
-          if (err) {
-            console.log(err)
-            this.pending = false
-          }
-        }
-      )
+        reserveTokenAddress)
+        .on('transactionHash', function (hash) {
+          console.log(hash)
+          this.pending = false
+        })
+        .on('error', function (error, receipt) {
+          console.log(error)
+          this.pending = false
+        })
     },
     triggerRun (managedPoolAddress) {
-      this.$store.state.bondingCurveControllerContractInstance().runCheck(
-        managedPoolAddress,
-        {
+      this.$store.state.bondingCurveControllerContractInstance().methods.runCheck(
+        managedPoolAddress)
+        .send({
           gas: 15696230,
           from: this.$store.state.web3.coinbase
-        },
-        (err, result) => {
-          if (err) {
-            console.log(err)
-            this.pending = false
-          }
-        }
-      )
+        })
+        .on('transactionHash', function (hash) {
+          console.log(hash)
+          this.pending = false
+        })
+        .on('error', function (error, receipt) {
+          console.log(error)
+          this.pending = false
+        })
     },
     buyRun (managedPoolAddress, amount, recipient) {
-      this.$store.state.reserveControllerContractInstance().buyReserveToken(
+      this.$store.state.reserveControllerContractInstance().methods.buyReserveToken(
         managedPoolAddress,
         amount,
-        recipient,
-        {
+        recipient)
+        .send({
           gas: 15696230,
           from: this.$store.state.web3.coinbase
-        },
-        (err, result) => {
-          if (err) {
-            console.log(err)
-            this.pending = false
-          }
-        }
-      )
+        })
+        .on('transactionHash', function (hash) {
+          console.log(hash)
+          this.pending = false
+        })
+        .on('error', function (error, receipt) {
+          console.log(error)
+          this.pending = false
+        })
     },
     sellRun (reserveTokenAddress, managedPoolAddress, amount, recipient) {
-      this.$store.state.reserveControllerContractInstance().sellReserveToken(
+      this.$store.state.reserveControllerContractInstance().methods.sellReserveToken(
         reserveTokenAddress,
         managedPoolAddress,
         amount,
-        recipient,
-        {
+        recipient)
+        .send({
           gas: 15696230,
           from: this.$store.state.web3.coinbase
+        })
+        .on('transactionHash', function (hash) {
+          console.log(hash)
+          this.pending = false
+        })
+        .on('error', function (error, receipt) {
+          console.log(error)
+          this.pending = false
+        })
+    },
+    addRun (poolId, amount) {
+      const JOIN_KIND_EXACT_TOKENS_IN_FOR_BPT_OUT = 1
+
+      const tokenBalances = [
+        new BigNumber(amount).toString(), // 18 demials
+        new BigNumber(amount).toString() // 18 decimals
+      ]
+
+      const initUserData = defaultAbiCoder.encode(
+        ['uint256', 'uint256[]', 'uint256'],
+        [JOIN_KIND_EXACT_TOKENS_IN_FOR_BPT_OUT, tokenBalances, 10]
+      )
+
+      var defaults = {
+        assets: ['0x785fa6c4383c42def4182c1820d23f1196a112ce', '0x900b0c0762f7ee2d68eb07bb5d17629298aecb9a'],
+        maxAmountsIn: tokenBalances,
+        userData: initUserData,
+        fromInternalBalance: false
+      }
+      console.log('defaults: ')
+      console.log(defaults)
+
+      this.$store.state.vaultContractInstance().methods.joinPool(
+        poolId,
+        this.$store.state.web3.coinbase,
+        this.$store.state.web3.coinbase,
+        [defaults])
+        .send({
+          gas: 15696230,
+          from: this.$store.state.web3.coinbase
+        })
+        .on('transactionHash', function (hash) {
+          console.log(hash)
+          this.pending = false
+        })
+        .on('error', function (error, receipt) {
+          console.log(error)
+          this.pending = false
+        })
+
+      /* this.$store.state.reserveControllerContractInstance().JoinPool(
+        poolId,
+        this.$store.state.web3.coinbase,
+        this.$store.state.web3.coinbase,
+        ['0x785fa6c4383c42def4182c1820d23f1196a112ce', '0x900b0c0762f7ee2d68eb07bb5d17629298aecb9a'],
+        tokenBalances,
+        initUserData,
+        false,
+        {
+          gas: 15696230,
+          from: this.$store.state.web3.coinbase,
+          value: this.$store.state.web3
+            .web3Instance()
+            .toWei(this.amount, 'ether')
         },
         (err, result) => {
           if (err) {
@@ -150,26 +216,27 @@ export default {
             this.pending = false
           }
         }
-      )
+      ) */
     },
     SwitchSwapEnabledRun (switchSwapEnabledValue, managedPoolAddress) {
-      this.$store.state.bondingCurveControllerContractInstance().setSwapEnabled(
+      this.$store.state.bondingCurveControllerContractInstance().methods.setSwapEnabled(
         managedPoolAddress,
-        switchSwapEnabledValue,
-        {
+        switchSwapEnabledValue)
+        .send({
           gas: 15696230,
           from: this.$store.state.web3.coinbase
-        },
-        (err, result) => {
-          if (err) {
-            console.log(err)
-            this.pending = false
-          }
-        }
-      )
+        })
+        .on('transactionHash', function (hash) {
+          console.log(hash)
+          this.pending = false
+        })
+        .on('error', function (error, receipt) {
+          console.log(error)
+          this.pending = false
+        })
     },
     addAutoManagedPool (name, symbol, poolTokens, poolNormalisedWeights, poolAssetManagers, swapFeePercentage, swapEnabledOnStart, mustAllowListLPs, managementAumFeePercentage, aumFeeId, tolerance, salt) {
-      this.$store.state.bondingCurveControllerContractInstance().createPool(
+      this.$store.state.bondingCurveControllerContractInstance().methods.createPool(
         name,
         symbol,
         poolTokens,
@@ -181,64 +248,56 @@ export default {
         managementAumFeePercentage,
         aumFeeId,
         tolerance,
-        salt,
-        {
+        salt)
+        .send({
           gas: 15696230,
-          value: this.$store.state.web3
-            .web3Instance()
-            .toWei(this.amount, 'ether'),
           from: this.$store.state.web3.coinbase
-        },
-        (err, result) => {
-          if (err) {
-            console.log(err)
-            this.pending = false
-          }
-        }
-      )
+        })
+        .on('transactionHash', function (hash) {
+          console.log(hash)
+          this.pending = false
+        })
+        .on('error', function (error, receipt) {
+          console.log(error)
+          this.pending = false
+        })
     },
     registerSelfManagedPool (poolAddress, reserveTokenAddress) {
-      this.$store.state.reserveControllerContractInstance().registerManagedPool(
+      this.$store.state.reserveControllerContractInstance().methods.registerManagedPool(
         poolAddress,
-        reserveTokenAddress,
-        {
+        reserveTokenAddress)
+        .send({
           gas: 15696230,
-          value: this.$store.state.web3
-            .web3Instance()
-            .toWei(this.amount, 'ether'),
           from: this.$store.state.web3.coinbase
-        },
-        (err, result) => {
-          if (err) {
-            console.log(err)
-            this.pending = false
-          }
-        }
-      )
+        })
+        .on('transactionHash', function (hash) {
+          console.log(hash)
+          this.pending = false
+        })
+        .on('error', function (error, receipt) {
+          console.log(error)
+          this.pending = false
+        })
     },
     deregisterSelfManagedPool (poolAddress, reserveTokenAddress) {
-      this.$store.state.reserveControllerContractInstance().deregisterManagedPool(
+      this.$store.state.reserveControllerContractInstance().methods.deregisterManagedPool(
         poolAddress,
-        reserveTokenAddress,
-        {
+        reserveTokenAddress)
+        .send({
           gas: 15696230,
-          value: this.$store.state.web3
-            .web3Instance()
-            .toWei(this.amount, 'ether'),
           from: this.$store.state.web3.coinbase
-        },
-        (err, result) => {
-          if (err) {
-            console.log(err)
-            this.pending = false
-          }
-        }
-      )
+        })
+        .on('transactionHash', function (hash) {
+          console.log(hash)
+          this.pending = false
+        })
+        .on('error', function (error, receipt) {
+          console.log(error)
+          this.pending = false
+        })
     },
     addSelfManagedPool (name, symbol, poolTokens, poolNormalisedWeights, poolAssetManagers, swapFeePercentage, swapEnabledOnStart, mustAllowListLPs, managementAumFeePercentage, aumFeeId, salt, reserveToken) {
-      console.log('PPPPPP')
-      console.log(reserveToken)
-      this.$store.state.reserveControllerContractInstance().createPool(
+      this.$store.state.reserveControllerContractInstance().methods.createPool(
         name,
         symbol,
         poolTokens,
@@ -249,22 +308,19 @@ export default {
         mustAllowListLPs,
         managementAumFeePercentage,
         aumFeeId,
-        salt,
-        reserveToken,
-        {
+        salt)
+        .send({
           gas: 15696230,
-          value: this.$store.state.web3
-            .web3Instance()
-            .toWei(this.amount, 'ether'),
           from: this.$store.state.web3.coinbase
-        },
-        (err, result) => {
-          if (err) {
-            console.log(err)
-            this.pending = false
-          }
-        }
-      )
+        })
+        .on('transactionHash', function (hash) {
+          console.log(hash)
+          this.pending = false
+        })
+        .on('error', function (error, receipt) {
+          console.log(error)
+          this.pending = false
+        })
     }
   },
   beforeCreate () {
@@ -282,57 +338,46 @@ export default {
   async mounted () {
     console.log('dispatching getContractInstance')
     this.$store.dispatch('getContractInstance')
-
     this.pools = []
 
     while (this.$store.state.bondingCurveControllerContractInstance === null) {
-      await this.sleep(100)
+      await this.sleep(1000)
     }
-    await this.$store.state.bondingCurveControllerContractInstance().getPoolsUnderManagement.call(
-      {
-        from: this.$store.state.web3.coinbase
-      },
-      (err, poolSet) => {
-        if (err) {
-          console.log(err)
-          this.pending = false
-        } else {
-          this.pools = []
-          poolSet.forEach((item, index) => {
-            console.log('dispatching getPoolContractInstance')
-            this.$store.dispatch('getPoolContractInstance', {
-              address: item
-            })
-            this.poolAddresses.push(item)
+    this.$store.state.bondingCurveControllerContractInstance().methods.getPoolsUnderManagement().call((err, poolSet) => {
+      if (err) {
+        console.log(err)
+        this.pending = false
+      } else {
+        this.pools = []
+        poolSet.forEach((item, index) => {
+          console.log('dispatching getPoolContractInstance')
+          this.$store.dispatch('getPoolContractInstance', {
+            address: item
           })
-          this.poolCount = poolSet.length
-        }
+          this.poolAddresses.push(item)
+        })
+        this.poolCount = poolSet.length
       }
-    )
+    })
+
     while (this.$store.state.poolContractInstance === null || this.$store.state.poolContractInstance.length !== this.poolCount) {
       await this.sleep(100)
     }
     this.pools = []
     this.$store.state.poolContractInstance.forEach((poolId, index) => {
-      poolId().getPoolId.call(
-        {
-          from: this.$store.state.web3.coinbase
-        },
+      poolId().methods.getPoolId().call(
         (err, id) => {
           if (err) {
             console.log(err)
             this.pending = false
           } else {
-            poolId().getSwapEnabled.call(
-              {
-                from: this.$store.state.web3.coinbase
-              },
+            poolId().methods.getSwapEnabled().call(
               (err, isSwapEnabled) => {
                 if (err) {
                   console.log(err)
                   this.pending = false
                 } else {
-                  poolId().getCircuitBreakerState.call(
+                  poolId().methods.getCircuitBreakerState(this.poolAddresses[index]).call(
                     this.poolAddresses[index],
                     {
                       from: this.$store.state.web3.coinbase
@@ -358,74 +403,58 @@ export default {
         }
       )
     })
-    await this.$store.state.reserveControllerContractInstance().getRegisteredPools.call(
-      {
-        from: this.$store.state.web3.coinbase
-      },
-      (err, poolSet) => {
-        if (err) {
-          console.log(err)
-          this.pending = false
-        } else {
-          this.reservePools = []
-          poolSet.forEach((item, index) => {
-            console.log('dispatching getReservePoolContractInstance')
-            this.$store.dispatch('getReservePoolContractInstance', {
-              address: item
-            })
-            this.reservePoolAddresses.push(item)
+    await this.$store.state.reserveControllerContractInstance().methods.getRegisteredPools().call((err, poolSet) => {
+      if (err) {
+        console.log(err)
+        this.pending = false
+      } else {
+        this.reservePools = []
+        poolSet.forEach((item, index) => {
+          console.log('dispatching getReservePoolContractInstance')
+          this.$store.dispatch('getReservePoolContractInstance', {
+            address: item
           })
-          this.reservePoolCount = poolSet.length
-        }
+          this.reservePoolAddresses.push(item)
+        })
+        this.reservePoolCount = poolSet.length
       }
+    }
     )
     while (this.$store.state.reservePoolContractInstance === null || this.$store.state.reservePoolContractInstance.length !== this.reservePoolCount) {
       await this.sleep(100)
     }
     this.reservePools = []
     this.$store.state.reservePoolContractInstance.forEach((poolId, index) => {
-      poolId().getPoolId.call(
-        {
-          from: this.$store.state.web3.coinbase
-        },
-        (err, id) => {
-          if (err) {
-            console.log(err)
-            this.pending = false
-          } else {
-            poolId().getSwapEnabled.call(
-              {
-                from: this.$store.state.web3.coinbase
-              },
-              (err, isSwapEnabled) => {
-                if (err) {
-                  console.log(err)
-                  this.pending = false
-                } else {
-                  poolId().getCircuitBreakerState.call(
-                    this.reservePoolAddresses[index],
-                    {
-                      from: this.$store.state.web3.coinbase
-                    },
-                    (err, circuitBreakerState) => {
-                      if (err) {
-                        console.log(err)
-                        this.pending = false
-                      } else {
-                        const newSelfmanagedPool = {
-                          id: id,
-                          address: this.reservePoolAddresses[index],
-                          isSwapEnabled: isSwapEnabled
-                        }
-                        this.reservePools.push(newSelfmanagedPool)
-                      }
+      poolId().methods.getPoolId().call((err, id) => {
+        if (err) {
+          console.log(err)
+          this.pending = false
+        } else {
+          poolId().methods.getSwapEnabled().call(
+            (err, isSwapEnabled) => {
+              if (err) {
+                console.log(err)
+                this.pending = false
+              } else {
+                poolId().methods.getCircuitBreakerState(this.reservePoolAddresses[index]).call((err, circuitBreakerState) => {
+                  if (err) {
+                    console.log(err)
+                    this.pending = false
+                  } else {
+                    const newSelfmanagedPool = {
+                      id: id,
+                      address: this.reservePoolAddresses[index],
+                      isSwapEnabled: isSwapEnabled
                     }
-                  )
+                    this.reservePools.push(newSelfmanagedPool)
+                  }
                 }
+                )
               }
-            )
-          }
+            }
+          )
         }
+      }
       )
     })
   }

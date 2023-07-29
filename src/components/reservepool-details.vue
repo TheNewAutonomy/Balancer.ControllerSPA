@@ -28,6 +28,7 @@
       <div style="padding:10px;">
         <button @click="buy">Buy Reserve</button>
         <button @click="sell">Sell Reserve</button>
+        <button @click="add">Add Liquidity</button>
       </div>
     </div>
   </li>
@@ -50,7 +51,7 @@ export default {
       required: true
     }
   },
-  emits: ['SwitchSwapEnabled', 'buy', 'sell'],
+  emits: ['SwitchSwapEnabled', 'buy', 'sell', 'add'],
   data () {
     return {
       detailsAreVisible: false,
@@ -80,6 +81,11 @@ export default {
         this.address,
         this.tradeAmount,
         this.recipientAddress)
+    },
+    add () {
+      this.$emit('add',
+        this.id,
+        this.tradeAmount)
     }
   }
 }
