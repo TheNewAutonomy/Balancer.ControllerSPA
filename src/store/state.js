@@ -10,6 +10,7 @@ let state = {
   bondingCurveControllerContractInstance: null,
   reserveControllerContractInstance: null,
   poolContractInstance: null,
+  erc20ContractInstance: null,
   reservePoolContractInstance: null,
   vaultContractInstance: null
 }

@@ -1,6 +1,6 @@
-// const address = '0x39d3541477EcDa2C0409462D653Da2c40a467960' // Celo
+// const address = '0x7E94223238C9d82fe6648CA5AaD1aE4D51287ECb' // Celo
 // const address = '0x57155520Dcc18bE602071247d3c39C07F2Cc9836' // Gnosis
-const address = "0xCFf82ec7E6De78191D78753b7B944Ea8f28a0ce8";
+const address = "0x5C6E0cA2AeE9EdBe06B727c23A51Ba4E5b3f25E9";
 const ABI = [
   {
     type: "constructor",

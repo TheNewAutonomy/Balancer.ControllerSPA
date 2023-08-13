@@ -66,6 +66,23 @@ import reservePoolDetails from '@/components/reservepool-details'
 import NewAutomanagedPool from '@/components/new-automanaged-pool'
 import NewManagedPool from '@/components/new-selfmanaged-pool'
 import NewRegisterSelfManagedPool from '@/components/register-selfmanaged-pool'
+import {address} from '../util/constants/vault'
+
+const WeightedPoolJoinKind = {
+  INIT: 0,
+  EXACT_TOKENS_IN_FOR_BPT_OUT: 1,
+  TOKEN_IN_FOR_EXACT_BPT_OUT: 2,
+  ALL_TOKENS_IN_FOR_EXACT_BPT_OUT: 3,
+  ADD_TOKEN: 4
+}
+
+const WeightedPoolExitKind = {
+  EXACT_BPT_IN_FOR_ONE_TOKEN_OUT: 0,
+  EXACT_BPT_IN_FOR_TOKENS_OUT: 1,
+  BPT_IN_FOR_EXACT_TOKENS_OUT: 2,
+  REMOVE_TOKEN: 3
+}
+
 export default {
   name: 'controller-dapp',
   data () {
@@ -88,6 +105,74 @@ export default {
   methods: {
     sleep (milliseconds) {
       return new Promise((resolve) => setTimeout(resolve, milliseconds))
+    },
+    /**
+     * Encodes the userData parameter for providing the initial liquidity to a WeightedPool
+     * @param initialBalances - the amounts of tokens to send to the pool to form the initial balances
+     */
+    joinInit (amountsIn) {
+      return defaultAbiCoder.encode(['uint256', 'uint256[]'], [WeightedPoolJoinKind.INIT, amountsIn])
+    },
+    /**
+     * Encodes the userData parameter for joining a WeightedPool with exact token inputs
+     * @param amountsIn - the amounts each of token to deposit in the pool as liquidity
+     * @param minimumBPT - the minimum acceptable BPT to receive in return for deposited tokens
+     */
+    joinExactTokensInForBPTOut (amountsIn, minimumBPT) {
+      return defaultAbiCoder.encode(
+        ['uint256', 'uint256[]', 'uint256'],
+        [WeightedPoolJoinKind.EXACT_TOKENS_IN_FOR_BPT_OUT, amountsIn, minimumBPT]
+      )
+    },
+    /**
+     * Encodes the userData parameter for joining a WeightedPool with a single token to receive an exact amount of BPT
+     * @param bptAmountOut - the amount of BPT to be minted
+     * @param enterTokenIndex - the index of the token to be provided as liquidity
+     */
+    joinTokenInForExactBPTOut (bptAmountOut, enterTokenIndex) {
+      return defaultAbiCoder.encode(
+        ['uint256', 'uint256', 'uint256'],
+        [WeightedPoolJoinKind.TOKEN_IN_FOR_EXACT_BPT_OUT, bptAmountOut, enterTokenIndex]
+      )
+    },
+    /**
+     * Encodes the userData parameter for joining a WeightedPool proportionally to receive an exact amount of BPT
+     * @param bptAmountOut - the amount of BPT to be minted
+     */
+    joinAllTokensInForExactBPTOut (bptAmountOut) {
+      return defaultAbiCoder.encode(
+        ['uint256', 'uint256'],
+        [WeightedPoolJoinKind.ALL_TOKENS_IN_FOR_EXACT_BPT_OUT, bptAmountOut]
+      )
+    },
+    /**
+     * Encodes the userData parameter for exiting a WeightedPool by removing a single token in return for an exact amount of BPT
+     * @param bptAmountIn - the amount of BPT to be burned
+     * @param enterTokenIndex - the index of the token to removed from the pool
+     */
+    exitExactBPTInForOneTokenOut (bptAmountIn, exitTokenIndex) {
+      return defaultAbiCoder.encode(
+        ['uint256', 'uint256', 'uint256'],
+        [WeightedPoolExitKind.EXACT_BPT_IN_FOR_ONE_TOKEN_OUT, bptAmountIn, exitTokenIndex]
+      )
+    },
+    /**
+     * Encodes the userData parameter for exiting a WeightedPool by removing tokens in return for an exact amount of BPT
+     * @param bptAmountIn - the amount of BPT to be burned
+     */
+    exitExactBPTInForTokensOut (bptAmountIn) {
+      return defaultAbiCoder.encode(['uint256', 'uint256'], [WeightedPoolExitKind.EXACT_BPT_IN_FOR_TOKENS_OUT, bptAmountIn])
+    },
+    /**
+     * Encodes the userData parameter for exiting a WeightedPool by removing exact amounts of tokens
+     * @param amountsOut - the amounts of each token to be withdrawn from the pool
+     * @param maxBPTAmountIn - the minimum acceptable BPT to burn in return for withdrawn tokens
+     */
+    exitBPTInForExactTokensOut (amountsOut, maxBPTAmountIn) {
+      return defaultAbiCoder.encode(
+        ['uint256', 'uint256[]', 'uint256'],
+        [WeightedPoolExitKind.BPT_IN_FOR_EXACT_TOKENS_OUT, amountsOut, maxBPTAmountIn]
+      )
     },
     registerRun (managedPoolAddress, reserveTokenAddress) {
       this.$store.state.reserveControllerContractInstance().methods.registerManagedPool(
@@ -155,34 +240,63 @@ export default {
           this.pending = false
         })
     },
-    addRun (poolId, amount) {
-      const JOIN_KIND_EXACT_TOKENS_IN_FOR_BPT_OUT = 1
+    async addRun (poolId, amount) {
+      this.$store.dispatch('getERC20ContractInstance', {
+        address: '0x471EcE3750Da237f93B8E339c536989b8978a438'
+      })
+
+      this.$store.dispatch('getERC20ContractInstance', {
+        address: '0x2A3684e9Dc20B857375EA04235F2F7edBe818FA7'
+      })
+
+      while (this.$store.state.erc20ContractInstance === null || this.$store.state.erc20ContractInstance.length !== 2) {
+        await this.sleep(100)
+      }
+
+      const amountWei = new BigNumber(amount * (10 ** 18)).toString()
+      // const amountWei = this.$store.state.web3.web3Instance.utils.toWei(amount.toString(), 'ether') // Convert the amount to Wei
+      this.$store.state.erc20ContractInstance[0]().methods.approve(address, amountWei)
+        .send({ from: this.$store.state.web3.coinbase })
+        .on('transactionHash', function (hash) {
+          console.log('Approval transaction hash:', hash)
+        })
+        .on('confirmation', function (confirmationNumber, receipt) {
+          console.log('Approval confirmation number:', confirmationNumber)
+        })
+        .on('error', function (error, receipt) {
+          console.log('Approval error:', error)
+        })
+      this.$store.state.erc20ContractInstance[1]().methods.approve(address, amountWei)
+        .send({ from: this.$store.state.web3.coinbase })
+        .on('transactionHash', function (hash) {
+          console.log('Approval transaction hash:', hash)
+        })
+        .on('confirmation', function (confirmationNumber, receipt) {
+          console.log('Approval confirmation number:', confirmationNumber)
+        })
+        .on('error', function (error, receipt) {
+          console.log('Approval error:', error)
+        })
 
       const tokenBalances = [
-        new BigNumber(amount).toString(), // 18 demials
-        new BigNumber(amount).toString() // 18 decimals
+        amountWei,
+        amountWei
       ]
 
-      const initUserData = defaultAbiCoder.encode(
-        ['uint256', 'uint256[]', 'uint256'],
-        [JOIN_KIND_EXACT_TOKENS_IN_FOR_BPT_OUT, tokenBalances, 10]
-      )
-
-      var defaults = {
-        assets: ['0x785fa6c4383c42def4182c1820d23f1196a112ce', '0x900b0c0762f7ee2d68eb07bb5d17629298aecb9a'],
+      var request = {
+        assets: ['0x471EcE3750Da237f93B8E339c536989b8978a438', '0x2A3684e9Dc20B857375EA04235F2F7edBe818FA7'],
         maxAmountsIn: tokenBalances,
-        userData: initUserData,
+        userData: this.joinExactTokensInForBPTOut(tokenBalances, 0),
         fromInternalBalance: false
       }
-      console.log('defaults: ')
-      console.log(defaults)
+
       this.$store.state.vaultContractInstance().methods.joinPool(
         poolId,
         this.$store.state.web3.coinbase,
         this.$store.state.web3.coinbase,
-        defaults)
+        request)
         .send({
-          gas: 15696230,
+          gas: 362368,
           from: this.$store.state.web3.coinbase
         })
         .on('transactionHash', function (hash) {
@@ -193,29 +307,6 @@ export default {
           console.log(error)
           this.pending = false
         })
-
-      /* this.$store.state.reserveControllerContractInstance().JoinPool(
-        poolId,
-        this.$store.state.web3.coinbase,
-        this.$store.state.web3.coinbase,
-        ['0x785fa6c4383c42def4182c1820d23f1196a112ce', '0x900b0c0762f7ee2d68eb07bb5d17629298aecb9a'],
-        tokenBalances,
-        initUserData,
-        false,
-        {
-          gas: 15696230,
-          from: this.$store.state.web3.coinbase,
-          value: this.$store.state.web3
-            .web3Instance()
-            .toWei(this.amount, 'ether')
-        },
-        (err, result) => {
-          if (err) {
-            console.log(err)
-            this.pending = false
-          }
-        }
-      ) */
     },
     SwitchSwapEnabledRun (switchSwapEnabledValue, managedPoolAddress) {
       this.$store.state.bondingCurveControllerContractInstance().methods.setSwapEnabled(
@@ -358,7 +449,6 @@ export default {
         this.poolCount = poolSet.length
       }
     })
-
     while (this.$store.state.poolContractInstance === null || this.$store.state.poolContractInstance.length !== this.poolCount) {
       await this.sleep(100)
     }

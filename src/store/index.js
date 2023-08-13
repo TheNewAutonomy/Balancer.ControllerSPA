@@ -8,6 +8,7 @@ import getReserveControllerContract from '../util/getReserveControllerContract'
 import getVaultContract from '../util/getVaultContract'
 import getPoolContract from '../util/getPoolContract'
 import getReservePoolContract from '../util/getReservePoolContract'
+import getERC20Contract from '../util/getERC20Contract'
 
 Vue.use(Vuex)
 export const store = new Vuex.Store({
@@ -20,7 +21,7 @@ export const store = new Vuex.Store({
       let web3Copy = state.web3
       web3Copy.coinbase = result.coinbase
       web3Copy.networkId = result.networkId
-      web3Copy.balance = parseInt(result.balance)
+      web3Copy.balance = parseInt(result.balance, 10)
       web3Copy.isInjected = result.injectedWeb3
       state.web3 = web3Copy
       pollWeb3()
@@ -49,6 +50,13 @@ export const store = new Vuex.Store({
         state.poolContractInstance = []
       }
       state.poolContractInstance.push(() => payload)
+    },
+    registerErc20ContractInstance (state, payload) {
+      console.log('Token contract instance: ', payload)
+      if (state.erc20ContractInstance === null) {
+        state.erc20ContractInstance = []
+      }
+      state.erc20ContractInstance.push(() => payload)
     },
     registerReservePoolContractInstance (state, payload) {
       console.log('Reserve pool contract instance: ', payload)
@@ -91,6 +99,9 @@ export const store = new Vuex.Store({
     },
     getReservePoolContractInstance ({commit}, pool) {
       getReservePoolContract(pool, {commit})
+    },
+    getERC20ContractInstance ({commit}, token) {
+      getERC20Contract(token, {commit})
     }
   }
 })
