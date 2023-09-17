@@ -53,10 +53,7 @@ export const store = new Vuex.Store({
     },
     registerErc20ContractInstance (state, payload) {
       console.log('Token contract instance: ', payload)
-      if (state.erc20ContractInstance === null) {
-        state.erc20ContractInstance = []
-      }
-      state.erc20ContractInstance.push(() => payload)
+      state.erc20ContractInstance = () => payload
     },
     registerReservePoolContractInstance (state, payload) {
       console.log('Reserve pool contract instance: ', payload)
