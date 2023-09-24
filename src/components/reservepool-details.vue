@@ -9,12 +9,6 @@
         <font size="1"> {{ id }}</font>
       </li>
       <li><strong>Address: </strong> {{ address }}</li>
-      <li>
-        <strong>Swap Enabled: </strong> {{ isSwapEnabled }}
-        <button @click="toggleSwaps">
-          {{ isSwapEnabled ? "Disable" : "Enable" }} Swaps
-        </button>
-      </li>
     </ul>
     <div v-if="detailsAreVisible">
       <div>
@@ -44,10 +38,6 @@ export default {
     address: {
       type: String,
       required: true
-    },
-    isSwapEnabled: {
-      type: Boolean,
-      required: true
     }
   },
   emits: ['SwitchSwapEnabled', 'buy', 'sell'],
@@ -61,13 +51,6 @@ export default {
   methods: {
     toggleDetails () {
       this.detailsAreVisible = !this.detailsAreVisible
-    },
-    toggleSwaps () {
-      this.isSwapEnabled = !this.isSwapEnabled
-
-      this.$emit('SwitchSwapEnabled',
-        this.isSwapEnabled,
-        this.address)
     },
     buy () {
       this.$emit('buy',

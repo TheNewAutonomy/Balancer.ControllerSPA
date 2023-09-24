@@ -30,9 +30,7 @@
           :key="pool.id"
           :id="pool.id"
           :address="pool.address"
-          :isSwapEnabled="pool.isSwapEnabled"
           @trigger="triggerRun"
-          @SwitchSwapEnabled="SwitchSwapEnabledRun"
         ></pool-details>
       </li>
     </ul>
@@ -46,8 +44,6 @@
           :key="pool.id"
           :id="pool.id"
           :address="pool.address"
-          :isSwapEnabled="pool.isSwapEnabled"
-          @SwitchSwapEnabled="SwitchSwapEnabledRun"
           @buy="buyRun"
           @sell="sellRun"
         ></reservepool-details>
@@ -203,7 +199,7 @@ export default {
     async buyRun (managedPoolAddress, amount, recipient) {
       this.$store.state.reservePoolContractInstance.forEach((pool, index) => {
         if (this.reservePoolAddresses[index] === managedPoolAddress) {
-          pool().methods.approve('0x367aDA1e5831c4B6db0c7Bee21fCBfa64b26b133', amount)
+          pool().methods.approve('0x5c33a2CaB08fDAff29064cBcF08F2bFA098eBC53', amount)
             .send({
               gas: 15696230,
               from: this.$store.state.web3.coinbase
@@ -243,7 +239,7 @@ export default {
       }
       this.$store.state.reservePoolContractInstance.forEach((pool, index) => {
         if (this.reservePoolAddresses[index] === managedPoolAddress) {
-          this.$store.state.erc20ContractInstance().methods.approve('0x367aDA1e5831c4B6db0c7Bee21fCBfa64b26b133', amount)
+          this.$store.state.erc20ContractInstance().methods.approve('0xc5dDb8822B874Af7eBE4FAC4BBBc4B1B43A5aD85', amount)
             .send({
               gas: 15696230,
               from: this.$store.state.web3.coinbase
@@ -294,14 +290,8 @@ export default {
         symbol,
         poolTokens,
         poolNormalisedWeights,
-        poolAssetManagers,
         swapFeePercentage,
-        swapEnabledOnStart,
-        mustAllowListLPs,
-        managementAumFeePercentage,
-        aumFeeId,
-        tolerance,
-        salt)
+        tolerance)
         .send({
           gas: 15696230,
           from: this.$store.state.web3.coinbase
@@ -422,34 +412,11 @@ export default {
             console.log(err)
             this.pending = false
           } else {
-            poolId().methods.getSwapEnabled().call(
-              (err, isSwapEnabled) => {
-                if (err) {
-                  console.log(err)
-                  this.pending = false
-                } else {
-                  poolId().methods.getCircuitBreakerState(this.poolAddresses[index]).call(
-                    this.poolAddresses[index],
-                    {
-                      from: this.$store.state.web3.coinbase
-                    },
-                    (err, circuitBreakerState) => {
-                      if (err) {
-                        console.log(err)
-                        this.pending = false
-                      } else {
-                        const newAutomanagedPool = {
-                          id: id,
-                          address: this.poolAddresses[index],
-                          isSwapEnabled: isSwapEnabled
-                        }
-                        this.pools.push(newAutomanagedPool)
-                      }
-                    }
-                  )
-                }
-              }
-            )
+            const newAutomanagedPool = {
+              id: id,
+              address: this.poolAddresses[index]
+            }
+            this.pools.push(newAutomanagedPool)
           }
         }
       )
@@ -483,34 +450,9 @@ export default {
         } else {
           const newSelfmanagedPool = {
             id: id,
-            address: this.reservePoolAddresses[index],
-            isSwapEnabled: true
+            address: this.reservePoolAddresses[index]
           }
           this.reservePools.push(newSelfmanagedPool)
-
-        /*  poolId().methods.getSwapEnabled().call(
-            (err, isSwapEnabled) => {
-              if (err) {
-                console.log(err)
-                this.pending = false
-              } else {
-                poolId().methods.getCircuitBreakerState(this.reservePoolAddresses[index]).call((err, circuitBreakerState) => {
-                  if (err) {
-                    console.log(err)
-                    this.pending = false
-                  } else {
-                    const newSelfmanagedPool = {
-                      id: id,
-                      address: this.reservePoolAddresses[index],
-                      isSwapEnabled: isSwapEnabled
-                    }
-                    this.reservePools.push(newSelfmanagedPool)
-                  }
-                }
-                )
-              }
-            }
-          ) */
         }
       }
       )
