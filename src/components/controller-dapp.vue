@@ -30,7 +30,9 @@
           :key="pool.id"
           :id="pool.id"
           :address="pool.address"
+          :isSwapEnabled="pool.isSwapEnabled"
           @trigger="triggerRun"
+          @SwitchSwapEnabled="SwitchSwapEnabledRun"
         ></pool-details>
       </li>
     </ul>
@@ -44,8 +46,11 @@
           :key="pool.id"
           :id="pool.id"
           :address="pool.address"
+          :isSwapEnabled="pool.isSwapEnabled"
+          @SwitchSwapEnabled="SwitchSwapEnabledRun"
           @buy="buyRun"
           @sell="sellRun"
+          @add="addRun"
         ></reservepool-details>
       </li>
     </ul>
@@ -54,6 +59,7 @@
 </template>
 <script>
 import { defaultAbiCoder } from '@ethersproject/abi'
+import BigNumber from 'bignumber.js'
 import HelloMetamask from '@/components/hello-metamask'
 import PoolDetails from '@/components/pool-details'
 import reservePoolDetails from '@/components/reservepool-details'
@@ -61,7 +67,7 @@ import NewAutomanagedPool from '@/components/new-automanaged-pool'
 import NewManagedPool from '@/components/new-selfmanaged-pool'
 import NewRegisterSelfManagedPool from '@/components/register-selfmanaged-pool'
 
-const WeightedPoolJoinKind = {
+const ManagedPoolJoinKind = {
   INIT: 0,
   EXACT_TOKENS_IN_FOR_BPT_OUT: 1,
   TOKEN_IN_FOR_EXACT_BPT_OUT: 2,
@@ -69,7 +75,7 @@ const WeightedPoolJoinKind = {
   ADD_TOKEN: 4
 }
 
-const WeightedPoolExitKind = {
+const ManagedPoolExitKind = {
   EXACT_BPT_IN_FOR_ONE_TOKEN_OUT: 0,
   EXACT_BPT_IN_FOR_TOKENS_OUT: 1,
   BPT_IN_FOR_EXACT_TOKENS_OUT: 2,
@@ -104,7 +110,7 @@ export default {
      * @param initialBalances - the amounts of tokens to send to the pool to form the initial balances
      */
     joinInit (amountsIn) {
-      return defaultAbiCoder.encode(['uint256', 'uint256[]'], [WeightedPoolJoinKind.INIT, amountsIn])
+      return defaultAbiCoder.encode(['uint256', 'uint256[]'], [ManagedPoolJoinKind.INIT, amountsIn])
     },
     /**
      * Encodes the userData parameter for joining a WeightedPool with exact token inputs
@@ -114,7 +120,7 @@ export default {
     joinExactTokensInForBPTOut (amountsIn, minimumBPT) {
       return defaultAbiCoder.encode(
         ['uint256', 'uint256[]', 'uint256'],
-        [WeightedPoolJoinKind.EXACT_TOKENS_IN_FOR_BPT_OUT, amountsIn, minimumBPT]
+        [ManagedPoolJoinKind.EXACT_TOKENS_IN_FOR_BPT_OUT, amountsIn, minimumBPT]
       )
     },
     /**
@@ -125,7 +131,7 @@ export default {
     joinTokenInForExactBPTOut (bptAmountOut, enterTokenIndex) {
       return defaultAbiCoder.encode(
         ['uint256', 'uint256', 'uint256'],
-        [WeightedPoolJoinKind.TOKEN_IN_FOR_EXACT_BPT_OUT, bptAmountOut, enterTokenIndex]
+        [ManagedPoolJoinKind.TOKEN_IN_FOR_EXACT_BPT_OUT, bptAmountOut, enterTokenIndex]
       )
     },
     /**
@@ -135,7 +141,7 @@ export default {
     joinAllTokensInForExactBPTOut (bptAmountOut) {
       return defaultAbiCoder.encode(
         ['uint256', 'uint256'],
-        [WeightedPoolJoinKind.ALL_TOKENS_IN_FOR_EXACT_BPT_OUT, bptAmountOut]
+        [ManagedPoolJoinKind.ALL_TOKENS_IN_FOR_EXACT_BPT_OUT, bptAmountOut]
       )
     },
     /**
@@ -146,7 +152,7 @@ export default {
     exitExactBPTInForOneTokenOut (bptAmountIn, exitTokenIndex) {
       return defaultAbiCoder.encode(
         ['uint256', 'uint256', 'uint256'],
-        [WeightedPoolExitKind.EXACT_BPT_IN_FOR_ONE_TOKEN_OUT, bptAmountIn, exitTokenIndex]
+        [ManagedPoolExitKind.EXACT_BPT_IN_FOR_ONE_TOKEN_OUT, bptAmountIn, exitTokenIndex]
       )
     },
     /**
@@ -154,7 +160,7 @@ export default {
      * @param bptAmountIn - the amount of BPT to be burned
      */
     exitExactBPTInForTokensOut (bptAmountIn) {
-      return defaultAbiCoder.encode(['uint256', 'uint256'], [WeightedPoolExitKind.EXACT_BPT_IN_FOR_TOKENS_OUT, bptAmountIn])
+      return defaultAbiCoder.encode(['uint256', 'uint256'], [ManagedPoolExitKind.EXACT_BPT_IN_FOR_TOKENS_OUT, bptAmountIn])
     },
     /**
      * Encodes the userData parameter for exiting a WeightedPool by removing exact amounts of tokens
@@ -164,7 +170,7 @@ export default {
     exitBPTInForExactTokensOut (amountsOut, maxBPTAmountIn) {
       return defaultAbiCoder.encode(
         ['uint256', 'uint256[]', 'uint256'],
-        [WeightedPoolExitKind.BPT_IN_FOR_EXACT_TOKENS_OUT, amountsOut, maxBPTAmountIn]
+        [ManagedPoolExitKind.BPT_IN_FOR_EXACT_TOKENS_OUT, amountsOut, maxBPTAmountIn]
       )
     },
     registerRun (managedPoolAddress, reserveTokenAddress) {
@@ -199,7 +205,7 @@ export default {
     async buyRun (managedPoolAddress, amount, recipient) {
       this.$store.state.reservePoolContractInstance.forEach((pool, index) => {
         if (this.reservePoolAddresses[index] === managedPoolAddress) {
-          pool().methods.approve('0x5c33a2CaB08fDAff29064cBcF08F2bFA098eBC53', amount)
+          pool().methods.approve('0xFE83F3298249d06F2D211de7728180F5b9fd0bE3', amount)
             .send({
               gas: 15696230,
               from: this.$store.state.web3.coinbase
@@ -239,7 +245,7 @@ export default {
       }
       this.$store.state.reservePoolContractInstance.forEach((pool, index) => {
         if (this.reservePoolAddresses[index] === managedPoolAddress) {
-          this.$store.state.erc20ContractInstance().methods.approve('0xc5dDb8822B874Af7eBE4FAC4BBBc4B1B43A5aD85', amount)
+          this.$store.state.erc20ContractInstance().methods.approve('0xFE83F3298249d06F2D211de7728180F5b9fd0bE3', amount)
             .send({
               gas: 15696230,
               from: this.$store.state.web3.coinbase
@@ -267,6 +273,42 @@ export default {
         }
       })
     },
+    addRun (poolId, amount) {
+      const tokenBalances = [
+        new BigNumber(amount).toString(), // 18 demials
+        new BigNumber(amount).toString(), // 18 demials
+        new BigNumber(amount).toString() // 18 decimals
+      ]
+      /*
+      const initUserData = defaultAbiCoder.encode(
+        ['uint256', 'uint256[]', 'uint256'],
+        [ManagedPoolJoinKind.INIT, tokenBalances, 10]
+      )
+      */
+      var defaults = {
+        assets: ['0x471EcE3750Da237f93B8E339c536989b8978a438', '0xBAAB46E28388d2779e6E31Fd00cF0e5Ad95E327B'],
+        maxAmountsIn: tokenBalances,
+        userData: this.joinInit([amount, amount, amount]),
+        fromInternalBalance: false
+      }
+      this.$store.state.vaultContractInstance().methods.joinPool(
+        poolId,
+        this.$store.state.web3.coinbase,
+        this.$store.state.web3.coinbase,
+        defaults)
+        .send({
+          gas: 15696230,
+          from: this.$store.state.web3.coinbase
+        })
+        .on('transactionHash', function (hash) {
+          console.log(hash)
+          this.pending = false
+        })
+        .on('error', function (error, receipt) {
+          console.log(error)
+          this.pending = false
+        })
+    },
     SwitchSwapEnabledRun (switchSwapEnabledValue, managedPoolAddress) {
       this.$store.state.bondingCurveControllerContractInstance().methods.setSwapEnabled(
         managedPoolAddress,
@@ -290,8 +332,14 @@ export default {
         symbol,
         poolTokens,
         poolNormalisedWeights,
+        poolAssetManagers,
         swapFeePercentage,
-        tolerance)
+        swapEnabledOnStart,
+        mustAllowListLPs,
+        managementAumFeePercentage,
+        aumFeeId,
+        tolerance,
+        salt)
         .send({
           gas: 15696230,
           from: this.$store.state.web3.coinbase
@@ -306,7 +354,7 @@ export default {
         })
     },
     registerSelfManagedPool (poolAddress, reserveTokenAddress) {
-      this.$store.state.reserveControllerContractInstance().methods.registerWeightedPool(
+      this.$store.state.reserveControllerContractInstance().methods.registerManagedPool(
         poolAddress)
         .send({
           gas: 15696230,
@@ -412,11 +460,34 @@ export default {
             console.log(err)
             this.pending = false
           } else {
-            const newAutomanagedPool = {
-              id: id,
-              address: this.poolAddresses[index]
-            }
-            this.pools.push(newAutomanagedPool)
+            poolId().methods.getSwapEnabled().call(
+              (err, isSwapEnabled) => {
+                if (err) {
+                  console.log(err)
+                  this.pending = false
+                } else {
+                  poolId().methods.getCircuitBreakerState(this.poolAddresses[index]).call(
+                    this.poolAddresses[index],
+                    {
+                      from: this.$store.state.web3.coinbase
+                    },
+                    (err, circuitBreakerState) => {
+                      if (err) {
+                        console.log(err)
+                        this.pending = false
+                      } else {
+                        const newAutomanagedPool = {
+                          id: id,
+                          address: this.poolAddresses[index],
+                          isSwapEnabled: isSwapEnabled
+                        }
+                        this.pools.push(newAutomanagedPool)
+                      }
+                    }
+                  )
+                }
+              }
+            )
           }
         }
       )
@@ -450,9 +521,34 @@ export default {
         } else {
           const newSelfmanagedPool = {
             id: id,
-            address: this.reservePoolAddresses[index]
+            address: this.reservePoolAddresses[index],
+            isSwapEnabled: true
           }
           this.reservePools.push(newSelfmanagedPool)
+
+        /*  poolId().methods.getSwapEnabled().call(
+            (err, isSwapEnabled) => {
+              if (err) {
+                console.log(err)
+                this.pending = false
+              } else {
+                poolId().methods.getCircuitBreakerState(this.reservePoolAddresses[index]).call((err, circuitBreakerState) => {
+                  if (err) {
+                    console.log(err)
+                    this.pending = false
+                  } else {
+                    const newSelfmanagedPool = {
+                      id: id,
+                      address: this.reservePoolAddresses[index],
+                      isSwapEnabled: isSwapEnabled
+                    }
+                    this.reservePools.push(newSelfmanagedPool)
+                  }
+                }
+                )
+              }
+            }
+          ) */
         }
       }
       )
