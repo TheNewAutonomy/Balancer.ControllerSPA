@@ -196,10 +196,10 @@ export default {
           this.pending = false
         })
     },
-    async buyRun (managedPoolAddress, amount, recipient) {
+    async buyRun (weightedPoolAddress, amount, recipient) {
       this.$store.state.reservePoolContractInstance.forEach((pool, index) => {
-        if (this.reservePoolAddresses[index] === managedPoolAddress) {
-          pool().methods.approve('0x5c33a2CaB08fDAff29064cBcF08F2bFA098eBC53', amount)
+        if (this.reservePoolAddresses[index] === weightedPoolAddress) {
+          pool().methods.approve('0xdfD5DCd09915318a5D2625771a78Cf8dBEE0b471', amount)
             .send({
               gas: 15696230,
               from: this.$store.state.web3.coinbase
@@ -207,7 +207,7 @@ export default {
             .on('transactionHash', (hash) => {
               console.log(hash)
               this.$store.state.reserveControllerContractInstance().methods.buyReserveToken(
-                managedPoolAddress,
+                weightedPoolAddress,
                 amount,
                 recipient)
                 .send({
@@ -227,7 +227,7 @@ export default {
         }
       })
     },
-    async sellRun (managedPoolAddress, amount, recipient) {
+    async sellRun (weightedPoolAddress, amount, recipient) {
       if (this.$store.state.erc20ContractInstance === null) {
         this.$store.dispatch('getERC20ContractInstance', {
           address: '0x7d9d314Ee8183653F800e551030d0b27663A1557'
@@ -238,7 +238,7 @@ export default {
         }
       }
       this.$store.state.reservePoolContractInstance.forEach((pool, index) => {
-        if (this.reservePoolAddresses[index] === managedPoolAddress) {
+        if (this.reservePoolAddresses[index] === weightedPoolAddress) {
           this.$store.state.erc20ContractInstance().methods.approve('0xc5dDb8822B874Af7eBE4FAC4BBBc4B1B43A5aD85', amount)
             .send({
               gas: 15696230,
@@ -247,7 +247,7 @@ export default {
             .on('transactionHash', (hash) => {
               console.log(hash)
               this.$store.state.reserveControllerContractInstance().methods.sellReserveToken(
-                managedPoolAddress,
+                weightedPoolAddress,
                 amount,
                 recipient)
                 .send({
@@ -267,9 +267,9 @@ export default {
         }
       })
     },
-    SwitchSwapEnabledRun (switchSwapEnabledValue, managedPoolAddress) {
+    SwitchSwapEnabledRun (switchSwapEnabledValue, weightedPoolAddress) {
       this.$store.state.bondingCurveControllerContractInstance().methods.setSwapEnabled(
-        managedPoolAddress,
+        weightedPoolAddress,
         switchSwapEnabledValue)
         .send({
           gas: 15696230,
